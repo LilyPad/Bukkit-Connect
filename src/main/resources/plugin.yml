@@ -1,0 +1,9 @@
+name: LilyPad-Connect
+version: ${build.number}
+description: LilyPad
+
+author: LilyPad
+website: http://lilypadmc.com/
+
+load: STARTUP
+main: ${main.class}
