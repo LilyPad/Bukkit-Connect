@@ -2,6 +2,7 @@ package lilypad.bukkit.connect;
 
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.api.ConnectSettings;
+import lilypad.client.connect.api.request.RequestException;
 import lilypad.client.connect.api.request.impl.AsServerRequest;
 import lilypad.client.connect.api.request.impl.AuthenticateRequest;
 import lilypad.client.connect.api.request.impl.GetKeyRequest;
@@ -49,18 +50,34 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				
+
 				// key
-				GetKeyResult getKeyResult = connect.request(new GetKeyRequest()).await(1000L);
+				GetKeyResult getKeyResult;
+				try {
+					getKeyResult = connect.request(new GetKeyRequest()).await(2500L);
+				} catch(RequestException exception) {
+					connect.disconnect();
+					System.out.println("[Connect] Request exception while keying, retrying: " + exception.getMessage());
+					Thread.sleep(1000L);
+					continue;
+				}
 				if(getKeyResult == null) {
 					connect.disconnect();
 					System.out.println("[Connect] Connection timed out while keying, retrying");
 					Thread.sleep(1000L);
 					continue;
 				}
-				
+
 				// authenticate
-				AuthenticateResult authenticationResult = connect.request(new AuthenticateRequest(settings.getUsername(), settings.getPassword(), getKeyResult.getKey())).await(1000L);
+				AuthenticateResult authenticationResult;
+				try {
+					authenticationResult = connect.request(new AuthenticateRequest(settings.getUsername(), settings.getPassword(), getKeyResult.getKey())).await(2500L);
+				} catch(RequestException exception) {
+					connect.disconnect();
+					System.out.println("[Connect] Request exception while authenticating, retrying: " + exception.getMessage());
+					Thread.sleep(1000L);
+					continue;
+				}
 				if(authenticationResult == null) {
 					connect.disconnect();
 					System.out.println("[Connect] Connection timed out while authenticating, retrying");
@@ -81,9 +98,17 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				
+
 				// announce
-				AsServerResult asServerResult = connect.request(new AsServerRequest(this.connectPlugin.getInboundAddress().getPort())).await(1000L);
+				AsServerResult asServerResult;
+				try {
+					asServerResult = connect.request(new AsServerRequest(this.connectPlugin.getInboundAddress().getPort())).await(2500L);
+				} catch(RequestException exception) {
+					connect.disconnect();
+					System.out.println("[Connect] Request exception while acquiring role, retrying: " + exception.getMessage());
+					Thread.sleep(1000L);
+					continue;
+				}
 				if(asServerResult == null) {
 					connect.disconnect();
 					System.out.println("[Connect] Connection timed out while acquiring role, retrying");
@@ -99,7 +124,7 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				
+
 				// pause
 				System.out.println("[Connect] Connected to the cloud");
 				this.connectPlugin.setSecurityKey(asServerResult.getSecurityKey());
@@ -110,7 +135,7 @@ public class ConnectThread implements Runnable {
 				System.out.println("[Connect] Lost connection to the cloud, reconnecting");
 			}
 		} catch(InterruptedException exception) {
-			//ignore
+			// ignore
 		} catch(Exception exception) {
 			System.out.println("-=== FATAL ===- Please report this error to http://lilypadmc.com:");
 			exception.printStackTrace();
