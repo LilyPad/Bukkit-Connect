@@ -44,6 +44,8 @@ public class ConnectThread implements Runnable {
 				// connect
 				try {
 					connect.connect();
+				} catch(InterruptedException interruptedException) {
+					throw interruptedException;
 				} catch(Throwable throwable) {
 					connect.disconnect();
 					System.out.println("[Connect] Couldn't connect to remote host: \"" + throwable.getMessage() + "\", retrying");
