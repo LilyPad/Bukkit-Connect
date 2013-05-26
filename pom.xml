@@ -54,6 +54,28 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <appendAssemblyId>false</appendAssemblyId>
+              <relocations>
+                <relocation>
+                  <pattern>io.netty</pattern>
+                  <shadedPattern>lilypad.libs.io.netty</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.5.1</version>
         <configuration>
@@ -62,32 +84,16 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2</version>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-            	<source>1.6</source>
-          		<target>1.6</target>
-            	<descriptorRefs>
-            		<descriptorRef>jar-with-dependencies</descriptorRef>
-          		</descriptorRefs>
-            	<appendAssemblyId>false</appendAssemblyId>
-            	<archive>
-            		<addMavenDescriptor>false</addMavenDescriptor>
-            		<manifestEntries>
-              			<Implementation-Title>${name}</Implementation-Title>
-              			<Implementation-Version>${build.number}</Implementation-Version>
-            		</manifestEntries>
-          		</archive>
-            </configuration>
-          </execution>
-        </executions>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <addMavenDescriptor>false</addMavenDescriptor>
+            <manifestEntries>
+              	<Implementation-Title>${name}</Implementation-Title>
+              	<Implementation-Version>${build.number}</Implementation-Version>
+            </manifestEntries>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
   </build>
