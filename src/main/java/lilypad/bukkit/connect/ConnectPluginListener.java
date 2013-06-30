@@ -31,6 +31,7 @@ public class ConnectPluginListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerLogin(PlayerLoginEvent playerLoginEvent) {
 		// verify integrity
+		System.out.println(this.connectPlugin.getSecurityKey() + " " + playerLoginEvent.getHostname());
 		String[] playerData = playerLoginEvent.getHostname().split("\\:")[0].split("\\;");
 		if(playerData.length != 3) {
 			playerLoginEvent.disallow(Result.KICK_OTHER, "Error: Authentication to LilyPad failed");

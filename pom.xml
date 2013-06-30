@@ -69,10 +69,6 @@
                   <pattern>io.netty</pattern>
                   <shadedPattern>lilypad.libs.io.netty</shadedPattern>
                 </relocation>
-                <relocation>
-                  <pattern>javassist</pattern>
-                  <shadedPattern>lilypad.libs.javassist</shadedPattern>
-                </relocation>
               </relocations>
             </configuration>
           </execution>
