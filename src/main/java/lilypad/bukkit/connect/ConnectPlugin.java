@@ -16,49 +16,50 @@ public class ConnectPlugin extends JavaPlugin {
 	private Connect connect;
 	private ConnectThread connectThread;
 	private String securityKey;
-	
+
 	@Override
 	public void onLoad() {
 		super.getConfig().options().copyDefaults(true);
 		super.saveConfig();
 		super.reloadConfig();
 	}
-	
+
 	@Override
 	public void onEnable() {
-		try {
-			this.connect = new ConnectImpl(new ConnectSettingsImpl(this.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
-			this.connectThread = new ConnectThread(this);
-			
-			this.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
-			this.getServer().getPluginManager().registerEvents(new ConnectPluginListener(this), this);
-			this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-				public void run() {
+		this.connect = new ConnectImpl(new ConnectSettingsImpl(this.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
+		this.connectThread = new ConnectThread(this);
+
+		this.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
+		this.getServer().getPluginManager().registerEvents(new ConnectPluginListener(this), this);
+		this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+			public void run() {
+				try {
+					Object craftServer = ConnectPlugin.super.getServer();
+					Object minecraftServer = ReflectionUtils.getPrivateField(craftServer, Object.class, "console");
+
+					// Set Offline Mode
+					try {
+						Object booleanWrapperOnline = ReflectionUtils.getPrivateField(craftServer, Object.class, "online");
+						ReflectionUtils.setFinalField(booleanWrapperOnline.getClass(), booleanWrapperOnline, "value", false);
+					} catch(Exception exception) {
+						System.out.println("[Connect] Unable to set offline mode in CraftBukkit - older version?");
+					}
+					Method setOnlineMode = minecraftServer.getClass().getMethod("setOnlineMode", boolean.class);
+					setOnlineMode.invoke(minecraftServer, Boolean.FALSE);
+
+					// Connection Throttle
+					YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer, YamlConfiguration.class, "configuration");
+					configuration.set("settings.connection-throttle", 0);
+
 					ConnectPlugin.this.connectThread.start();
+				} catch(Exception exception) {
+					System.out.println("[Connect] Unable to start plugin - unsupported version?");
 				}
-			});
-			
-			Object craftServer = super.getServer();
-			Object minecraftServer = ReflectionUtils.getPrivateField(craftServer, Object.class, "console");
-			
-			// Set Offline Mode
-			try {
-				Object booleanWrapperOnline = ReflectionUtils.getPrivateField(craftServer, Object.class, "online");
-				ReflectionUtils.setFinalField(booleanWrapperOnline.getClass(), booleanWrapperOnline, "value", false);
-			} catch(Exception exception) {
-				System.out.println("[Connect] Unable to set offline mode in CraftBukkit - older version?");
 			}
-			Method setOnlineMode = minecraftServer.getClass().getMethod("setOnlineMode", boolean.class);
-			setOnlineMode.invoke(minecraftServer, Boolean.FALSE);
-			
-			// Connection Throttle
-			YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer, YamlConfiguration.class, "configuration");
-			configuration.set("settings.connection-throttle", 0);
-		} catch(Exception exception) {
-			System.out.println("[Connect] Unable to start plugin - unsupported version?");
-		}
+		});
+
 	}
-	
+
 	@Override
 	public void onDisable() {
 		try {
@@ -75,21 +76,21 @@ public class ConnectPlugin extends JavaPlugin {
 			this.connectThread = null;
 		}
 	}
-	
+
 	public InetSocketAddress getInboundAddress() {
 		return new InetSocketAddress(this.getServer().getIp().isEmpty() ? "0.0.0.0" : this.getServer().getIp(), this.getServer().getPort());
 	}
-	
+
 	public Connect getConnect() {
 		return this.connect;
 	}
-	
+
 	public String getSecurityKey() {
 		return this.securityKey;
 	}
-	
+
 	public void setSecurityKey(String securityKey) {
 		this.securityKey = securityKey;
 	}
-	
+
 }
