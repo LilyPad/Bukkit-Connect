@@ -3,7 +3,7 @@ version: ${build.number}
 description: LilyPad
 
 author: LilyPad
-website: http://lilypadmc.com/
+website: http://www.lilypadmc.org/
 
 load: STARTUP
 main: ${main.class}
