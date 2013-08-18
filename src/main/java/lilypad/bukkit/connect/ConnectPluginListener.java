@@ -89,7 +89,7 @@ public class ConnectPluginListener implements Listener {
 			
 			SocketAddress playerAddress = this.playersToAddresses.remove(player);
 			try {
-				// 1.5
+				// 1.5 +
 				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "k", playerAddress);
 			} catch(Exception exception) {
 				try {

@@ -78,7 +78,7 @@ public class ConnectPlugin extends JavaPlugin {
 	}
 
 	public InetSocketAddress getInboundAddress() {
-		return new InetSocketAddress(this.getServer().getIp().isEmpty() ? "0.0.0.0" : this.getServer().getIp(), this.getServer().getPort());
+		return new InetSocketAddress(super.getServer().getIp().isEmpty() ? "0.0.0.0" : super.getServer().getIp(), super.getServer().getPort());
 	}
 
 	public Connect getConnect() {
