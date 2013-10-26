@@ -32,7 +32,7 @@ public class ConnectPluginListener implements Listener {
 	public void onPlayerLogin(PlayerLoginEvent playerLoginEvent) {
 		// verify integrity
 		String[] playerData = playerLoginEvent.getHostname().split("\\:")[0].split("\\;");
-		if(playerData.length != 3) {
+		if(playerData.length < 3) {
 			playerLoginEvent.disallow(Result.KICK_OTHER, "Error: Authentication to LilyPad failed");
 			return;
 		}
