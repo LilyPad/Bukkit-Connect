@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
+import java.util.UUID;
 
 import lilypad.bukkit.connect.util.ReflectionUtils;
 
@@ -16,20 +17,21 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 
-
 import com.google.common.collect.MapMaker;
 
 public class ConnectPluginListener implements Listener {
 
 	private ConnectPlugin connectPlugin;
 	private Map<Player, InetSocketAddress> playersToAddresses = new MapMaker().weakKeys().makeMap();
-	
+
 	public ConnectPluginListener(ConnectPlugin connectPlugin) {
 		this.connectPlugin = connectPlugin;
 	}
-	
+
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerLogin(PlayerLoginEvent playerLoginEvent) {
+		Player player = playerLoginEvent.getPlayer();
+
 		// verify integrity
 		String[] playerData = playerLoginEvent.getHostname().split("\\:")[0].split("\\;");
 		if(playerData.length < 3) {
@@ -40,7 +42,7 @@ public class ConnectPluginListener implements Listener {
 			playerLoginEvent.disallow(Result.KICK_OTHER, "Error: Authentication to LilyPad failed");
 			return;
 		}
-		
+
 		// store IP address
 		InetSocketAddress playerAddress = new InetSocketAddress(playerData[1], Integer.parseInt(playerData[2]));
 		try {
@@ -49,7 +51,20 @@ public class ConnectPluginListener implements Listener {
 			System.out.println("[Connect] Failed to store player address in PlayerLoginEvent");
 		}
 		this.playersToAddresses.put(playerLoginEvent.getPlayer(), playerAddress);
-		
+
+		// store unique ID (1.7.2)
+		try {
+			Method getHandleMethod = player.getClass().getMethod("getHandle");
+			Object entityPlayer = getHandleMethod.invoke(player);
+			if (playerData[3].length() == 32) {
+				ReflectionUtils.setFinalField(entityPlayer.getClass(), entityPlayer, "uniqueID", UUID.fromString(playerData[3].substring(0, 8) + "-" + playerData[3].substring(8, 12) + "-" + playerData[3].substring(12, 16) + "-" + playerData[3].substring(16, 20) + "-" + playerData[3].substring(20, 32)));
+			} else {
+				System.out.println("[Connect] Unexpected UUID length: " + playerData[3].length());
+			}
+		} catch(Exception exception) {
+			System.out.println("[Connect] Failed to store player UUID in EntityPlayer");
+		}
+
 		// emulate a normal login procedure with the IP address
 		if(playerLoginEvent.getResult() == Result.KICK_BANNED && playerLoginEvent.getKickMessage().startsWith("Your IP address is banned from this server!\nReason: ")) {
 			if(this.connectPlugin.getServer().getIPBans().contains(playerData[1])) {
@@ -61,16 +76,16 @@ public class ConnectPluginListener implements Listener {
 			}
 		}
 	}
-	
+
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(PlayerJoinEvent playerJoinEvent) {
 		Player player = playerJoinEvent.getPlayer();
-		
+
 		// store IP address
 		try {
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
 			Object entityPlayer = getHandleMethod.invoke(player);
-			
+
 			// old MC support
 			String playerConnectionFieldName = "playerConnection";
 			for (Field field : entityPlayer.getClass().getFields()){
@@ -80,30 +95,35 @@ public class ConnectPluginListener implements Listener {
 				playerConnectionFieldName = "netServerHandler";
 				break;
 			}
-			
+
 			Field playerConnectionField = entityPlayer.getClass().getField(playerConnectionFieldName);
 			Object playerConnection = playerConnectionField.get(entityPlayer);
-			
+
 			Field networkManagerField = playerConnection.getClass().getField("networkManager");
 			Object networkManager = networkManagerField.get(playerConnection);
-			
+
 			SocketAddress playerAddress = this.playersToAddresses.remove(player);
 			try {
-				// 1.5 +
-				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "k", playerAddress);
+				// 1.7 +
+				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", playerAddress);
 			} catch(Exception exception) {
 				try {
-					// spigot
-					ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "address", playerAddress);
+					// 1.5 +
+					ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "k", playerAddress);
 				} catch(Exception exception1) {
-					// 1.4
-					ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "j", playerAddress);
+					try {
+						// spigot
+						ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "address", playerAddress);
+					} catch(Exception exception2) {
+						// 1.4
+						ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "j", playerAddress);
+					}
 				}
 			}
 		} catch (Exception exception) {
 			System.out.println("[Connect] Failed to store player address in INetworkManager");
 		}
 	}
-	
-	
+
+
 }
