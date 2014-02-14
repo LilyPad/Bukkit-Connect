@@ -20,7 +20,7 @@ public class ConnectThread implements Runnable {
 	}
 
 	public void start() {
-		if(this.thread != null) {
+		if (this.thread != null) {
 			return;
 		}
 		this.thread = new Thread(this);
@@ -29,7 +29,7 @@ public class ConnectThread implements Runnable {
 	}
 
 	public void stop() {
-		if(this.thread == null) {
+		if (this.thread == null) {
 			return;
 		}
 		this.thread.interrupt();
@@ -63,7 +63,7 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				if(getKeyResult == null) {
+				if (getKeyResult == null) {
 					connect.disconnect();
 					System.out.println("[Connect] Connection timed out while keying, retrying");
 					Thread.sleep(1000L);
@@ -80,7 +80,7 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				if(authenticationResult == null) {
+				if (authenticationResult == null) {
 					connect.disconnect();
 					System.out.println("[Connect] Connection timed out while authenticating, retrying");
 					Thread.sleep(1000L);
@@ -111,7 +111,7 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				if(asServerResult == null) {
+				if (asServerResult == null) {
 					connect.disconnect();
 					System.out.println("[Connect] Connection timed out while acquiring role, retrying");
 					Thread.sleep(1000L);
