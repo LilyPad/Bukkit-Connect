@@ -63,10 +63,10 @@ public class ConnectPlugin extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		try {
-			if(this.connectThread != null) {
+			if (this.connectThread != null) {
 				this.connectThread.stop();
 			}
-			if(this.connect != null) {
+			if (this.connect != null) {
 				this.connect.close();
 			}
 		} catch(Exception exception) {

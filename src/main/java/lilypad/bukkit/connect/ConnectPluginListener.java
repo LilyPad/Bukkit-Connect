@@ -34,11 +34,11 @@ public class ConnectPluginListener implements Listener {
 
 		// verify integrity
 		String[] playerData = playerLoginEvent.getHostname().split("\\:")[0].split("\\;");
-		if(playerData.length < 3) {
+		if (playerData.length < 3) {
 			playerLoginEvent.disallow(Result.KICK_OTHER, "Error: Authentication to LilyPad failed");
 			return;
 		}
-		if(!playerData[0].equals(this.connectPlugin.getSecurityKey())) {
+		if (!playerData[0].equals(this.connectPlugin.getSecurityKey())) {
 			playerLoginEvent.disallow(Result.KICK_OTHER, "Error: Authentication to LilyPad failed");
 			return;
 		}
@@ -66,10 +66,10 @@ public class ConnectPluginListener implements Listener {
 		}
 
 		// emulate a normal login procedure with the IP address
-		if(playerLoginEvent.getResult() == Result.KICK_BANNED && playerLoginEvent.getKickMessage().startsWith("Your IP address is banned from this server!\nReason: ")) {
-			if(this.connectPlugin.getServer().getIPBans().contains(playerData[1])) {
+		if (playerLoginEvent.getResult() == Result.KICK_BANNED && playerLoginEvent.getKickMessage().startsWith("Your IP address is banned from this server!\nReason: ")) {
+			if (this.connectPlugin.getServer().getIPBans().contains(playerData[1])) {
 				playerLoginEvent.disallow(Result.KICK_BANNED, "Your IP address is banned from this server!");
-			} else if(this.connectPlugin.getServer().getOnlinePlayers().length >= this.connectPlugin.getServer().getMaxPlayers()) {
+			} else if (this.connectPlugin.getServer().getOnlinePlayers().length >= this.connectPlugin.getServer().getMaxPlayers()) {
 				playerLoginEvent.disallow(Result.KICK_FULL, "The server is full!");
 			} else {
 				playerLoginEvent.allow();
