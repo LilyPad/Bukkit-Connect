@@ -3,7 +3,6 @@ package lilypad.bukkit.connect;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Map;
 import java.util.UUID;
 
@@ -97,6 +96,5 @@ public class ConnectPluginListener implements Listener {
 			System.out.println("[Connect] Failed to store player address in INetworkManager");
 		}
 	}
-
 
 }
