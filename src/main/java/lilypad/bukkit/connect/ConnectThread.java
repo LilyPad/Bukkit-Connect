@@ -11,7 +11,7 @@ import lilypad.client.connect.api.result.impl.AuthenticateResult;
 import lilypad.client.connect.api.result.impl.GetKeyResult;
 
 public class ConnectThread implements Runnable {
-	
+
 	private ConnectPlugin connectPlugin;
 	private Thread thread;
 
