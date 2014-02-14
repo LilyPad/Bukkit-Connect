@@ -86,40 +86,13 @@ public class ConnectPluginListener implements Listener {
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
 			Object entityPlayer = getHandleMethod.invoke(player);
 
-			// old MC support
-			String playerConnectionFieldName = "playerConnection";
-			for (Field field : entityPlayer.getClass().getFields()){
-				if (!field.getName().equals("netServerHandler")){
-					continue;
-				}
-				playerConnectionFieldName = "netServerHandler";
-				break;
-			}
-
-			Field playerConnectionField = entityPlayer.getClass().getField(playerConnectionFieldName);
+			Field playerConnectionField = entityPlayer.getClass().getField("playerConnection");
 			Object playerConnection = playerConnectionField.get(entityPlayer);
 
 			Field networkManagerField = playerConnection.getClass().getField("networkManager");
 			Object networkManager = networkManagerField.get(playerConnection);
 
-			SocketAddress playerAddress = this.playersToAddresses.remove(player);
-			try {
-				// 1.7 +
-				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", playerAddress);
-			} catch(Exception exception) {
-				try {
-					// 1.5 +
-					ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "k", playerAddress);
-				} catch(Exception exception1) {
-					try {
-						// spigot
-						ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "address", playerAddress);
-					} catch(Exception exception2) {
-						// 1.4
-						ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "j", playerAddress);
-					}
-				}
-			}
+			ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", this.playersToAddresses.remove(player));
 		} catch (Exception exception) {
 			System.out.println("[Connect] Failed to store player address in INetworkManager");
 		}
