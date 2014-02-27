@@ -30,8 +30,8 @@ public class ReflectionUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T getPrivateField(Object object, Class<T> fieldClass, String fieldName) throws Exception {
-		Field field = object.getClass().getDeclaredField(fieldName);
+	public static <T> T getPrivateField(Class<?> objectClass, Object object, Class<T> fieldClass, String fieldName) throws Exception {
+		Field field = objectClass.getDeclaredField(fieldName);
 		field.setAccessible(true);
 		return (T) field.get(object);
 	}

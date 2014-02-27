@@ -35,11 +35,11 @@ public class ConnectPlugin extends JavaPlugin {
 			public void run() {
 				try {
 					Object craftServer = ConnectPlugin.super.getServer();
-					Object minecraftServer = ReflectionUtils.getPrivateField(craftServer, Object.class, "console");
+					Object minecraftServer = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "console");
 
 					// Set Offline Mode
 					try {
-						Object booleanWrapperOnline = ReflectionUtils.getPrivateField(craftServer, Object.class, "online");
+						Object booleanWrapperOnline = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "online");
 						ReflectionUtils.setFinalField(booleanWrapperOnline.getClass(), booleanWrapperOnline, "value", false);
 					} catch(Exception exception) {
 						System.out.println("[Connect] Unable to set offline mode in CraftBukkit - older version?");
@@ -48,7 +48,7 @@ public class ConnectPlugin extends JavaPlugin {
 					setOnlineMode.invoke(minecraftServer, Boolean.FALSE);
 
 					// Connection Throttle
-					YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer, YamlConfiguration.class, "configuration");
+					YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, YamlConfiguration.class, "configuration");
 					configuration.set("settings.connection-throttle", 0);
 
 					ConnectPlugin.this.connectThread.start();

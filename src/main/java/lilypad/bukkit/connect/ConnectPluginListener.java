@@ -55,7 +55,9 @@ public class ConnectPluginListener implements Listener {
 		try {
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
 			Object entityPlayer = getHandleMethod.invoke(player);
+			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "i");
 			if (playerData[3].length() == 32) {
+				ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", playerData[3]);
 				ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", UUID.fromString(playerData[3].substring(0, 8) + "-" + playerData[3].substring(8, 12) + "-" + playerData[3].substring(12, 16) + "-" + playerData[3].substring(16, 20) + "-" + playerData[3].substring(20, 32)));
 			} else {
 				System.out.println("[Connect] Unexpected UUID length: " + playerData[3].length());
