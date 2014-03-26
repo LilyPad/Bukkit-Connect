@@ -93,7 +93,12 @@ public class ConnectPluginListener implements Listener {
 			Field networkManagerField = playerConnection.getClass().getField("networkManager");
 			Object networkManager = networkManagerField.get(playerConnection);
 
-			ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", this.playersToAddresses.remove(player));
+			InetSocketAddress socketAddress = this.playersToAddresses.remove(player);
+			try {
+				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "n", socketAddress);
+			} catch(Exception exception1) {
+				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", socketAddress);
+			}
 		} catch (Exception exception) {
 			System.out.println("[Connect] Failed to store player address in INetworkManager");
 		}
