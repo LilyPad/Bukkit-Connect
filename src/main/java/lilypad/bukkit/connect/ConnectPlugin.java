@@ -29,9 +29,11 @@ public class ConnectPlugin extends JavaPlugin {
 		this.connect = new ConnectImpl(new ConnectSettingsImpl(this.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
 		this.connectThread = new ConnectThread(this);
 
-		this.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
-		this.getServer().getPluginManager().registerEvents(new ConnectPluginListener(this), this);
-		this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
+		ConnectPluginListener listener = new ConnectPluginListener(this);
+		super.getServer().getPluginManager().registerEvents(listener, this);
+		super.getServer().getMessenger().registerIncomingPluginChannel(this, "LilyPad", listener);
+		super.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
 				try {
 					Object craftServer = ConnectPlugin.super.getServer();

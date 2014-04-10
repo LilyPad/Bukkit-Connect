@@ -1,5 +1,9 @@
 package lilypad.bukkit.connect;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -7,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import lilypad.bukkit.connect.util.ReflectionUtils;
+import lilypad.packet.common.util.BufferUtils;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,10 +20,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
+import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import com.google.common.collect.MapMaker;
+import com.google.common.collect.Multimap;
 
-public class ConnectPluginListener implements Listener {
+public class ConnectPluginListener implements Listener, PluginMessageListener {
 
 	private ConnectPlugin connectPlugin;
 	private Map<Player, InetSocketAddress> playersToAddresses = new MapMaker().weakKeys().makeMap();
@@ -101,6 +108,41 @@ public class ConnectPluginListener implements Listener {
 			}
 		} catch (Exception exception) {
 			System.out.println("[Connect] Failed to store player address in INetworkManager");
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
+		System.out.println("Alerting game profile");
+		try {
+			ByteBuf buffer = Unpooled.wrappedBuffer(message);
+			int length = BufferUtils.readVarInt(buffer);
+
+			// Game Profile
+			Class<?> gameProfileClass = Class.forName("org.spigotmc.authlib.GameProfile");
+			Constructor<?> gameProfileConstructor = gameProfileClass.getConstructor(UUID.class, String.class);
+			Object gameProfile = gameProfileConstructor.newInstance(player.getUniqueId(), player.getName());
+
+			// Properties
+			Method getPropertiesMethod = gameProfile.getClass().getMethod("getProperties");
+			Multimap<String, Object> gameProfileProperties = (Multimap<String, Object>) getPropertiesMethod.invoke(gameProfile);
+			Constructor<?> propertyConstructor = Class.forName("org.spigotmc.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
+			for(int i = 0; i < length; i++) {
+				String name = BufferUtils.readString(buffer);
+				gameProfileProperties.put(name, propertyConstructor.newInstance(name, BufferUtils.readString(buffer), BufferUtils.readString(buffer)));
+			}
+
+			Method getHandleMethod = player.getClass().getMethod("getHandle");
+			Object entityPlayer = getHandleMethod.invoke(player);
+
+			String packageName = entityPlayer.getClass().getPackage().getName();
+			Constructor<?> newGameProfileWrapperConstructor = Class.forName(packageName + ".ThreadPlayerLookupUUID$NewGameProfileWrapper").getConstructor(gameProfileClass);
+			Object newGameProfileWrapper = newGameProfileWrapperConstructor.newInstance(gameProfile);
+
+			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass(), entityPlayer, "i", newGameProfileWrapper);
+		} catch(Exception exception) {
+			exception.printStackTrace();
+			System.out.println("[Connect] Failed to alter game profile in EntityPlayer: " + exception.getMessage() + " (only functional with Spigot for now)");
 		}
 	}
 
