@@ -113,7 +113,6 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 	
 	@SuppressWarnings("unchecked")
 	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-		System.out.println("Alerting game profile");
 		try {
 			ByteBuf buffer = Unpooled.wrappedBuffer(message);
 			int length = BufferUtils.readVarInt(buffer);
@@ -141,7 +140,6 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 
 			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass(), entityPlayer, "i", newGameProfileWrapper);
 		} catch(Exception exception) {
-			exception.printStackTrace();
 			System.out.println("[Connect] Failed to alter game profile in EntityPlayer: " + exception.getMessage() + " (only functional with Spigot for now)");
 		}
 	}
