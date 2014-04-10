@@ -7,7 +7,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import lilypad.bukkit.connect.util.ReflectionUtils;
@@ -20,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import com.google.common.collect.MapMaker;
@@ -29,6 +32,7 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 
 	private ConnectPlugin connectPlugin;
 	private Map<Player, InetSocketAddress> playersToAddresses = new MapMaker().weakKeys().makeMap();
+	private Set<Player> invisiblePlayers = new HashSet<Player>();
 
 	public ConnectPluginListener(ConnectPlugin connectPlugin) {
 		this.connectPlugin = connectPlugin;
@@ -89,6 +93,14 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 	public void onPlayerJoin(PlayerJoinEvent playerJoinEvent) {
 		Player player = playerJoinEvent.getPlayer();
 
+		for(Player invisiblePlayer : this.invisiblePlayers) {
+			player.hidePlayer(invisiblePlayer);
+		}
+		this.invisiblePlayers.add(player);
+		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
+			otherPlayer.hidePlayer(player);
+		}
+		
 		// store IP address
 		try {
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
@@ -109,6 +121,12 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		} catch (Exception exception) {
 			System.out.println("[Connect] Failed to store player address in INetworkManager");
 		}
+	}
+	
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent playerQuitEvent) {
+		this.playersToAddresses.remove(playerQuitEvent.getPlayer());
+		this.invisiblePlayers.remove(playerQuitEvent.getPlayer());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -141,6 +159,10 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass(), entityPlayer, "i", newGameProfileWrapper);
 		} catch(Exception exception) {
 			System.out.println("[Connect] Failed to alter game profile in EntityPlayer: " + exception.getMessage() + " (only functional with Spigot for now)");
+		}
+		this.invisiblePlayers.remove(player);
+		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
+			otherPlayer.showPlayer(player);
 		}
 	}
 
