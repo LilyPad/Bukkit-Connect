@@ -87,12 +87,8 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 				playerLoginEvent.allow();
 			}
 		}
-	}
-
-	@EventHandler(priority = EventPriority.LOWEST)
-	public void onPlayerJoin(PlayerJoinEvent playerJoinEvent) {
-		Player player = playerJoinEvent.getPlayer();
-
+		
+		// invisibility
 		for(Player invisiblePlayer : this.invisiblePlayers) {
 			player.hidePlayer(invisiblePlayer);
 		}
@@ -100,6 +96,11 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
 			otherPlayer.hidePlayer(player);
 		}
+	}
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerJoin(PlayerJoinEvent playerJoinEvent) {
+		Player player = playerJoinEvent.getPlayer();
 		
 		// store IP address
 		try {
@@ -135,12 +136,12 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 			ByteBuf buffer = Unpooled.wrappedBuffer(message);
 			int length = BufferUtils.readVarInt(buffer);
 
-			// Game Profile
+			// game Profile
 			Class<?> gameProfileClass = Class.forName("org.spigotmc.authlib.GameProfile");
 			Constructor<?> gameProfileConstructor = gameProfileClass.getConstructor(UUID.class, String.class);
 			Object gameProfile = gameProfileConstructor.newInstance(player.getUniqueId(), player.getName());
 
-			// Properties
+			// properties
 			Method getPropertiesMethod = gameProfile.getClass().getMethod("getProperties");
 			Multimap<String, Object> gameProfileProperties = (Multimap<String, Object>) getPropertiesMethod.invoke(gameProfile);
 			Constructor<?> propertyConstructor = Class.forName("org.spigotmc.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
@@ -160,6 +161,8 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		} catch(Exception exception) {
 			System.out.println("[Connect] Failed to alter game profile in EntityPlayer: " + exception.getMessage() + " (only functional with Spigot for now)");
 		}
+		
+		// invisibility
 		this.invisiblePlayers.remove(player);
 		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
 			otherPlayer.showPlayer(player);
