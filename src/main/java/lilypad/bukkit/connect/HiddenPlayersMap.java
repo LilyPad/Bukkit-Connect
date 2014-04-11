@@ -20,10 +20,6 @@ public class HiddenPlayersMap extends ForwardingMap<String, Player> {
 	@Override
 	public boolean containsKey(Object key) {
 		if(this.initializingPlayers.contains(key)) {
-			StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-			if(stackTraceElements[2].getMethodName().equals("showPlayer")) {
-				return false; // player is not invisible - this way we can avoid showing the player
-			}
 			return true; // player is invisible
 		}
 		return super.containsKey(key);
