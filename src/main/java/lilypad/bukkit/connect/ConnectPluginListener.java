@@ -32,12 +32,13 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 
 	private ConnectPlugin connectPlugin;
 	private Map<Player, InetSocketAddress> playersToAddresses = new MapMaker().weakKeys().makeMap();
-	private Set<Player> invisiblePlayers = new HashSet<Player>();
+	private Set<String> initializingPlayers = new HashSet<String>();
 
 	public ConnectPluginListener(ConnectPlugin connectPlugin) {
 		this.connectPlugin = connectPlugin;
 	}
 
+	@SuppressWarnings("unchecked")
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerLogin(PlayerLoginEvent playerLoginEvent) {
 		Player player = playerLoginEvent.getPlayer();
@@ -58,7 +59,7 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		try {
 			ReflectionUtils.setFinalField(PlayerLoginEvent.class, playerLoginEvent, "address", playerAddress.getAddress());
 		} catch(Exception exception) {
-			System.out.println("[Connect] Failed to store player address in PlayerLoginEvent");
+			System.out.println("[Connect] Failed to store player address in PlayerLoginEvent: " + exception.getMessage());
 		}
 		this.playersToAddresses.put(playerLoginEvent.getPlayer(), playerAddress);
 
@@ -74,7 +75,7 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 				System.out.println("[Connect] Unexpected UUID length: " + playerData[3].length());
 			}
 		} catch(Exception exception) {
-			System.out.println("[Connect] Failed to store player UUID in EntityPlayer");
+			System.out.println("[Connect] Failed to store player UUID in EntityPlayer: " + exception.getMessage());
 		}
 
 		// emulate a normal login procedure with the IP address
@@ -88,14 +89,16 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 			}
 		}
 		
+		// invisibility inject
+		try {
+			Map<String, Player> hiddenPlayersDelegate = (Map<String, Player>) ReflectionUtils.getPrivateField(player.getClass(), player, Map.class, "hiddenPlayers");
+			ReflectionUtils.setFinalField(player.getClass(), player, "hiddenPlayers", new HiddenPlayersMap(hiddenPlayersDelegate, this.initializingPlayers));
+		} catch(Exception exception) {
+			System.out.println("[Connect] Failed to inject hiddenPlayers in CraftPlayer: " + exception.getMessage());
+		}
+		
 		// invisibility
-		for(Player invisiblePlayer : this.invisiblePlayers) {
-			player.hidePlayer(invisiblePlayer);
-		}
-		this.invisiblePlayers.add(player);
-		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
-			otherPlayer.hidePlayer(player);
-		}
+		this.initializingPlayers.add(player.getName());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -120,14 +123,14 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", socketAddress);
 			}
 		} catch (Exception exception) {
-			System.out.println("[Connect] Failed to store player address in INetworkManager");
+			System.out.println("[Connect] Failed to store player address in INetworkManager: " + exception.getMessage());
 		}
 	}
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent playerQuitEvent) {
 		this.playersToAddresses.remove(playerQuitEvent.getPlayer());
-		this.invisiblePlayers.remove(playerQuitEvent.getPlayer());
+		this.initializingPlayers.remove(playerQuitEvent.getPlayer().getName());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -163,10 +166,13 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		}
 		
 		// invisibility
-		this.invisiblePlayers.remove(player);
 		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
+			if(!otherPlayer.canSee(player)) {
+				continue;
+			}
 			otherPlayer.showPlayer(player);
 		}
+		this.initializingPlayers.remove(player);
 	}
 
 }
