@@ -166,13 +166,15 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		}
 		
 		// invisibility
+		this.initializingPlayers.remove(player.getName());
 		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
 			if(!otherPlayer.canSee(player)) {
 				continue;
 			}
+			otherPlayer.hidePlayer(player);
 			otherPlayer.showPlayer(player);
 		}
-		this.initializingPlayers.remove(player);
+		
 	}
 
 }
