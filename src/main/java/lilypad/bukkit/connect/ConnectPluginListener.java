@@ -139,30 +139,22 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 			ByteBuf buffer = Unpooled.wrappedBuffer(message);
 			int length = BufferUtils.readVarInt(buffer);
 
-			// game Profile
-			Class<?> gameProfileClass = Class.forName("org.spigotmc.authlib.GameProfile");
-			Constructor<?> gameProfileConstructor = gameProfileClass.getConstructor(UUID.class, String.class);
-			Object gameProfile = gameProfileConstructor.newInstance(player.getUniqueId(), player.getName());
+			// game profile
+			Method getHandleMethod = player.getClass().getMethod("getHandle");
+			Object entityPlayer = getHandleMethod.invoke(player);
+			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "i");
 
 			// properties
 			Method getPropertiesMethod = gameProfile.getClass().getMethod("getProperties");
 			Multimap<String, Object> gameProfileProperties = (Multimap<String, Object>) getPropertiesMethod.invoke(gameProfile);
-			Constructor<?> propertyConstructor = Class.forName("org.spigotmc.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
+			gameProfileProperties.clear();
+			Constructor<?> propertyConstructor = Class.forName("net.minecraft.util.com.mojang.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
 			for(int i = 0; i < length; i++) {
 				String name = BufferUtils.readString(buffer);
 				gameProfileProperties.put(name, propertyConstructor.newInstance(name, BufferUtils.readString(buffer), BufferUtils.readString(buffer)));
 			}
-
-			Method getHandleMethod = player.getClass().getMethod("getHandle");
-			Object entityPlayer = getHandleMethod.invoke(player);
-
-			String packageName = entityPlayer.getClass().getPackage().getName();
-			Constructor<?> newGameProfileWrapperConstructor = Class.forName(packageName + ".ThreadPlayerLookupUUID$NewGameProfileWrapper").getConstructor(gameProfileClass);
-			Object newGameProfileWrapper = newGameProfileWrapperConstructor.newInstance(gameProfile);
-
-			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass(), entityPlayer, "i", newGameProfileWrapper);
 		} catch(Exception exception) {
-			System.out.println("[Connect] Failed to alter game profile in EntityPlayer: " + exception.getMessage() + " (only functional with Spigot for now)");
+			System.out.println("[Connect] Failed to alter game profile in EntityPlayer: " + exception.getMessage());
 		}
 		
 		// invisibility
