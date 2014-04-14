@@ -26,7 +26,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.Multimap;
 
 public class ConnectPluginListener implements Listener, PluginMessageListener {
 
@@ -69,8 +68,9 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 			Object entityPlayer = getHandleMethod.invoke(player);
 			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "i");
 			if (playerData[3].length() == 32) {
-				ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", playerData[3]);
-				ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", UUID.fromString(playerData[3].substring(0, 8) + "-" + playerData[3].substring(8, 12) + "-" + playerData[3].substring(12, 16) + "-" + playerData[3].substring(16, 20) + "-" + playerData[3].substring(20, 32)));
+				UUID uuid = UUID.fromString(playerData[3].substring(0, 8) + "-" + playerData[3].substring(8, 12) + "-" + playerData[3].substring(12, 16) + "-" + playerData[3].substring(16, 20) + "-" + playerData[3].substring(20, 32));
+				ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", uuid);
+				ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", uuid);
 			} else {
 				System.out.println("[Connect] Unexpected UUID length: " + playerData[3].length());
 			}
@@ -134,7 +134,6 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		this.initializingPlayers.remove(player.getUniqueId());
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
 		try {
 			ByteBuf buffer = Unpooled.wrappedBuffer(message);
@@ -147,12 +146,14 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 
 			// properties
 			Method getPropertiesMethod = gameProfile.getClass().getMethod("getProperties");
-			Multimap<String, Object> gameProfileProperties = (Multimap<String, Object>) getPropertiesMethod.invoke(gameProfile);
-			gameProfileProperties.clear();
+			Object gameProfileProperties = getPropertiesMethod.invoke(gameProfile);
+			Method gameProfilePropertiesClear = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("clear");
+			Method gameProfilePropertiesPut = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("put", Object.class, Object.class);
+			gameProfilePropertiesClear.invoke(gameProfileProperties);
 			Constructor<?> propertyConstructor = Class.forName("net.minecraft.util.com.mojang.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
 			for(int i = 0; i < length; i++) {
 				String name = BufferUtils.readString(buffer);
-				gameProfileProperties.put(name, propertyConstructor.newInstance(name, BufferUtils.readString(buffer), BufferUtils.readString(buffer)));
+				gameProfilePropertiesPut.invoke(gameProfileProperties, name, propertyConstructor.newInstance(name, BufferUtils.readString(buffer), BufferUtils.readString(buffer)));
 			}
 		} catch(Exception exception) {
 			System.out.println("[Connect] Failed to alter game profile in EntityPlayer: " + exception.getMessage());
