@@ -32,7 +32,7 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 
 	private ConnectPlugin connectPlugin;
 	private Map<Player, InetSocketAddress> playersToAddresses = new MapMaker().weakKeys().makeMap();
-	private Set<String> initializingPlayers = new HashSet<String>();
+	private Set<UUID> initializingPlayers = new HashSet<UUID>();
 
 	public ConnectPluginListener(ConnectPlugin connectPlugin) {
 		this.connectPlugin = connectPlugin;
@@ -91,14 +91,14 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		
 		// invisibility inject
 		try {
-			Map<String, Player> hiddenPlayersDelegate = (Map<String, Player>) ReflectionUtils.getPrivateField(player.getClass(), player, Map.class, "hiddenPlayers");
-			ReflectionUtils.setFinalField(player.getClass(), player, "hiddenPlayers", new HiddenPlayersMap(hiddenPlayersDelegate, this.initializingPlayers));
+			Set<UUID> hiddenPlayersDelegate = (Set<UUID>) ReflectionUtils.getPrivateField(player.getClass(), player, Set.class, "hiddenPlayers");
+			ReflectionUtils.setFinalField(player.getClass(), player, "hiddenPlayers", new HiddenPlayersSet(hiddenPlayersDelegate, this.initializingPlayers));
 		} catch(Exception exception) {
 			System.out.println("[Connect] Failed to inject hiddenPlayers in CraftPlayer: " + exception.getMessage());
 		}
 		
 		// invisibility
-		this.initializingPlayers.add(player.getName());
+		this.initializingPlayers.add(player.getUniqueId());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -129,8 +129,9 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent playerQuitEvent) {
-		this.playersToAddresses.remove(playerQuitEvent.getPlayer());
-		this.initializingPlayers.remove(playerQuitEvent.getPlayer().getName());
+		Player player = playerQuitEvent.getPlayer();
+		this.playersToAddresses.remove(player);
+		this.initializingPlayers.remove(player.getUniqueId());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -158,7 +159,7 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		}
 		
 		// invisibility
-		this.initializingPlayers.remove(player.getName());
+		this.initializingPlayers.remove(player.getUniqueId());
 		for(Player otherPlayer : player.getServer().getOnlinePlayers()) {
 			if(!otherPlayer.canSee(player)) {
 				continue;
