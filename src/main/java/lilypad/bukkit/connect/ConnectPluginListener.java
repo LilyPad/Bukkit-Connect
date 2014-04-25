@@ -62,31 +62,31 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		}
 		this.playersToAddresses.put(playerLoginEvent.getPlayer(), playerAddress);
 
-		// store unique ID (1.7.2)
+		// store uuid
+		UUID uuid = UUID.fromString(playerData[3].substring(0, 8) + "-" + playerData[3].substring(8, 12) + "-" + playerData[3].substring(12, 16) + "-" + playerData[3].substring(16, 20) + "-" + playerData[3].substring(20, 32));
 		try {
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
 			Object entityPlayer = getHandleMethod.invoke(player);
 			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "i");
-			if (playerData[3].length() == 32) {
-				UUID uuid = UUID.fromString(playerData[3].substring(0, 8) + "-" + playerData[3].substring(8, 12) + "-" + playerData[3].substring(12, 16) + "-" + playerData[3].substring(16, 20) + "-" + playerData[3].substring(20, 32));
-				ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", uuid);
-				ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", uuid);
-			} else {
-				System.out.println("[Connect] Unexpected UUID length: " + playerData[3].length());
-			}
+			ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", uuid);
+			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", uuid);
 		} catch(Exception exception) {
 			System.out.println("[Connect] Failed to store player UUID in EntityPlayer: " + exception.getMessage());
 		}
 
-		// emulate a normal login procedure with the IP address
-		if (playerLoginEvent.getResult() == Result.KICK_BANNED && playerLoginEvent.getKickMessage().startsWith("Your IP address is banned from this server!\nReason: ")) {
-			if (this.connectPlugin.getServer().getIPBans().contains(playerData[1])) {
-				playerLoginEvent.disallow(Result.KICK_BANNED, "Your IP address is banned from this server!");
-			} else if (this.connectPlugin.getServer().getOnlinePlayers().length >= this.connectPlugin.getServer().getMaxPlayers()) {
-				playerLoginEvent.disallow(Result.KICK_FULL, "The server is full!");
-			} else {
-				playerLoginEvent.allow();
-			}
+		// emulate a normal login procedure
+		if (player.isBanned()) {
+			// TODO reason and expiration? Is this possible?
+			playerLoginEvent.disallow(Result.KICK_BANNED, "You are banned from this server!");
+		} else if (!player.isWhitelisted()) {
+			playerLoginEvent.disallow(Result.KICK_WHITELIST, "You are not white-listed on this server!");
+		} else if (this.connectPlugin.getServer().getIPBans().contains(playerData[1])) {
+			// TODO reason and expiration? Is this possible?
+			playerLoginEvent.disallow(Result.KICK_BANNED, "Your IP address is banned from this server!");
+		} else if (this.connectPlugin.getServer().getOnlinePlayers().length >= this.connectPlugin.getServer().getMaxPlayers()) {
+			playerLoginEvent.disallow(Result.KICK_FULL, "The server is full!");
+		} else if (playerLoginEvent.getResult() != Result.KICK_OTHER) {
+			playerLoginEvent.allow();
 		}
 		
 		// invisibility inject

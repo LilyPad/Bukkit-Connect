@@ -26,7 +26,7 @@ public class ConnectPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		this.connect = new ConnectImpl(new ConnectSettingsImpl(this.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
+		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
 		this.connectThread = new ConnectThread(this);
 
 		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
