@@ -78,7 +78,7 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		if (player.isBanned()) {
 			// TODO reason and expiration? Is this possible?
 			playerLoginEvent.disallow(Result.KICK_BANNED, "You are banned from this server!");
-		} else if (!player.isWhitelisted()) {
+		} else if (this.connectPlugin.getServer().hasWhitelist() && !player.isWhitelisted()) {
 			playerLoginEvent.disallow(Result.KICK_WHITELIST, "You are not white-listed on this server!");
 		} else if (this.connectPlugin.getServer().getIPBans().contains(playerData[1])) {
 			// TODO reason and expiration? Is this possible?
