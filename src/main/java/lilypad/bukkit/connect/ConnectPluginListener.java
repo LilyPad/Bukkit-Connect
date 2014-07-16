@@ -61,11 +61,19 @@ public class ConnectPluginListener implements Listener, PluginMessageListener {
 		// store uuid
 		UUID uuid = UUID.fromString(playerData[3].substring(0, 8) + "-" + playerData[3].substring(8, 12) + "-" + playerData[3].substring(12, 16) + "-" + playerData[3].substring(16, 20) + "-" + playerData[3].substring(20, 32));
 		try {
+			// entity
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
 			Object entityPlayer = getHandleMethod.invoke(player);
 			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "i");
 			ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", uuid);
 			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", uuid);
+			// user cache
+			Object craftServer = this.connectPlugin.getServer();
+			Object minecraftServer = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "console");
+			Method getUserCacheMethod = minecraftServer.getClass().getMethod("getUserCache");
+			Object userCache = getUserCacheMethod.invoke(minecraftServer);
+			Method cacheProfileMethod = userCache.getClass().getMethod("a", gameProfile.getClass());
+			cacheProfileMethod.invoke(userCache, gameProfile);
 		} catch(Exception exception) {
 			System.out.println("[Connect] Failed to store player UUID in EntityPlayer: " + exception.getMessage());
 		}
