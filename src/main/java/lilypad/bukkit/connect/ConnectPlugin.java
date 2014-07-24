@@ -1,15 +1,14 @@
 package lilypad.bukkit.connect;
 
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-
+import lilypad.bukkit.connect.util.ReflectionUtils;
+import lilypad.client.connect.api.Connect;
+import lilypad.client.connect.lib.ConnectImpl;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import lilypad.bukkit.connect.util.ReflectionUtils;
-import lilypad.client.connect.api.Connect;
-import lilypad.client.connect.lib.ConnectImpl;
+import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 
 public class ConnectPlugin extends JavaPlugin {
 
@@ -19,6 +18,7 @@ public class ConnectPlugin extends JavaPlugin {
 
 	@Override
 	public void onLoad() {
+		// load up the configs
 		super.getConfig().options().copyDefaults(true);
 		super.saveConfig();
 		super.reloadConfig();
@@ -26,13 +26,21 @@ public class ConnectPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
-		this.connectThread = new ConnectThread(this);
+		// To allow other plugins to edit the config before connecting.
+		// This won't affect any user except if they change the "autoconnect" boolean in the config.
+		// If it is set to false, the connection needs to be made after by calling connect().
+		// This is meant for custom plugins, as it may break other plugins.
+		if (getConfig().getBoolean("settings.autoconnect", true)) {
+			connect();
+		}
 
-		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
+		// Register the listener for this plugin
 		ConnectPluginListener listener = new ConnectPluginListener(this);
 		super.getServer().getPluginManager().registerEvents(listener, this);
+
+		// Register the plugin channel
 		super.getServer().getMessenger().registerIncomingPluginChannel(this, "LilyPad", listener);
+
 		super.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
 				try {
@@ -43,18 +51,20 @@ public class ConnectPlugin extends JavaPlugin {
 					try {
 						Object booleanWrapperOnline = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "online");
 						ReflectionUtils.setFinalField(booleanWrapperOnline.getClass(), booleanWrapperOnline, "value", false);
-					} catch(Exception exception) {
+					} catch (Exception exception) {
 						System.out.println("[Connect] Unable to set offline mode in CraftBukkit - older version?");
 					}
 					Method setOnlineMode = minecraftServer.getClass().getMethod("setOnlineMode", boolean.class);
 					setOnlineMode.invoke(minecraftServer, Boolean.FALSE);
 
-					// Connection Throttle
+					// Set Connection Throttle to 0
 					YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, YamlConfiguration.class, "configuration");
 					configuration.set("settings.connection-throttle", 0);
 
-					ConnectPlugin.this.connectThread.start();
-				} catch(Exception exception) {
+					if (getConfig().getBoolean("settings.autoconnect", true)) {
+						ConnectPlugin.this.connectThread.start();
+					}
+				} catch (Exception exception) {
 					System.out.println("[Connect] Unable to start plugin - unsupported version?");
 				}
 			}
@@ -62,8 +72,20 @@ public class ConnectPlugin extends JavaPlugin {
 
 	}
 
+	public void connect() {
+		// Connect
+		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
+		this.connectThread = new ConnectThread(this);
+		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
+
+		if (!getConfig().getBoolean("settings.autoconnect", true)) {
+			ConnectPlugin.this.connectThread.start();
+		}
+	}
+
 	@Override
 	public void onDisable() {
+		// Disconnect
 		try {
 			if (this.connectThread != null) {
 				this.connectThread.stop();
@@ -71,7 +93,7 @@ public class ConnectPlugin extends JavaPlugin {
 			if (this.connect != null) {
 				this.connect.close();
 			}
-		} catch(Exception exception) {
+		} catch (Exception exception) {
 			exception.printStackTrace();
 		} finally {
 			this.connect = null;

@@ -20,6 +20,7 @@ public class ConnectThread implements Runnable {
 	}
 
 	public void start() {
+		// Start the thread
 		if (this.thread != null) {
 			return;
 		}
@@ -29,6 +30,7 @@ public class ConnectThread implements Runnable {
 	}
 
 	public void stop() {
+		// Stop the thread
 		if (this.thread == null) {
 			return;
 		}
@@ -37,16 +39,17 @@ public class ConnectThread implements Runnable {
 	}
 
 	public void run() {
+		// Connection loop
 		Connect connect = this.connectPlugin.getConnect();
 		ConnectSettings settings = connect.getSettings();
 		try {
-			while(!connect.isClosed()) {
+			while (!connect.isClosed()) {
 				// connect
 				try {
 					connect.connect();
-				} catch(InterruptedException interruptedException) {
+				} catch (InterruptedException interruptedException) {
 					throw interruptedException;
-				} catch(Throwable throwable) {
+				} catch (Throwable throwable) {
 					connect.disconnect();
 					System.out.println("[Connect] Couldn't connect to remote host: \"" + throwable.getMessage() + "\", retrying");
 					Thread.sleep(1000L);
@@ -57,7 +60,7 @@ public class ConnectThread implements Runnable {
 				GetKeyResult getKeyResult;
 				try {
 					getKeyResult = connect.request(new GetKeyRequest()).await(2500L);
-				} catch(RequestException exception) {
+				} catch (RequestException exception) {
 					connect.disconnect();
 					System.out.println("[Connect] Request exception while keying, retrying: " + exception.getMessage());
 					Thread.sleep(1000L);
@@ -74,7 +77,7 @@ public class ConnectThread implements Runnable {
 				AuthenticateResult authenticationResult;
 				try {
 					authenticationResult = connect.request(new AuthenticateRequest(settings.getUsername(), settings.getPassword(), getKeyResult.getKey())).await(2500L);
-				} catch(RequestException exception) {
+				} catch (RequestException exception) {
 					connect.disconnect();
 					System.out.println("[Connect] Request exception while authenticating, retrying: " + exception.getMessage());
 					Thread.sleep(1000L);
@@ -86,26 +89,26 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				switch(authenticationResult.getStatusCode()) {
-				case SUCCESS:
-					break;
-				case INVALID_GENERIC:
-					connect.disconnect();
-					System.out.println("[Connect] Invalid username or password, retrying");
-					Thread.sleep(1000L);
-					continue;
-				default:
-					connect.disconnect();
-					System.out.println("[Connect] Unknown error while authenticating: \"" + authenticationResult.getStatusCode() + "\", retrying");
-					Thread.sleep(1000L);
-					continue;
+				switch (authenticationResult.getStatusCode()) {
+					case SUCCESS:
+						break;
+					case INVALID_GENERIC:
+						connect.disconnect();
+						System.out.println("[Connect] Invalid username or password, retrying");
+						Thread.sleep(1000L);
+						continue;
+					default:
+						connect.disconnect();
+						System.out.println("[Connect] Unknown error while authenticating: \"" + authenticationResult.getStatusCode() + "\", retrying");
+						Thread.sleep(1000L);
+						continue;
 				}
 
 				// announce
 				AsServerResult asServerResult;
 				try {
 					asServerResult = connect.request(new AsServerRequest(this.connectPlugin.getInboundAddress().getPort())).await(2500L);
-				} catch(RequestException exception) {
+				} catch (RequestException exception) {
 					connect.disconnect();
 					System.out.println("[Connect] Request exception while acquiring role, retrying: " + exception.getMessage());
 					Thread.sleep(1000L);
@@ -117,33 +120,33 @@ public class ConnectThread implements Runnable {
 					Thread.sleep(1000L);
 					continue;
 				}
-				switch(asServerResult.getStatusCode()) {
-				case SUCCESS:
-					break;
-				case INVALID_GENERIC:
-					connect.disconnect();
-					System.out.println("[Connect] Invalid username, already in use");
-					Thread.sleep(1000L);
-					break;
-				default:
-					connect.disconnect();
-					System.out.println("[Connect] Unknown error while acquiring role: \"" + asServerResult.getStatusCode() + "\", retrying");
-					Thread.sleep(1000L);
-					continue;
+				switch (asServerResult.getStatusCode()) {
+					case SUCCESS:
+						break;
+					case INVALID_GENERIC:
+						connect.disconnect();
+						System.out.println("[Connect] Invalid username, already in use");
+						Thread.sleep(1000L);
+						break;
+					default:
+						connect.disconnect();
+						System.out.println("[Connect] Unknown error while acquiring role: \"" + asServerResult.getStatusCode() + "\", retrying");
+						Thread.sleep(1000L);
+						continue;
 				}
 
 				// pause
 				System.out.println("[Connect] Connected to the cloud");
 				this.connectPlugin.setSecurityKey(asServerResult.getSecurityKey());
-				while(connect.isConnected()) {
+				while (connect.isConnected()) {
 					Thread.sleep(1000L);
 				}
 				this.connectPlugin.setSecurityKey(null);
 				System.out.println("[Connect] Lost connection to the cloud, reconnecting");
 			}
-		} catch(InterruptedException exception) {
+		} catch (InterruptedException exception) {
 			// ignore
-		} catch(Exception exception) {
+		} catch (Exception exception) {
 			System.out.println("[Connect] FATAL: Please report this error to http://www.lilypadmc.org:");
 			exception.printStackTrace();
 		}
