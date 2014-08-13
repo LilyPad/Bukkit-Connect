@@ -32,7 +32,6 @@ public class ConnectPlugin extends JavaPlugin {
 		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
 		ConnectPluginListener listener = new ConnectPluginListener(this);
 		super.getServer().getPluginManager().registerEvents(listener, this);
-		super.getServer().getMessenger().registerIncomingPluginChannel(this, "LilyPad", listener);
 		super.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
 				try {

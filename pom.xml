@@ -36,6 +36,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+	  <groupId>com.google.code.gson</groupId>
+	  <artifactId>gson</artifactId>
+	  <version>2.2.4</version>
+    </dependency>
+    <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
       <version>1.7.9-R0.1-SNAPSHOT</version>
@@ -68,6 +73,10 @@
                 <relocation>
                   <pattern>io.netty</pattern>
                   <shadedPattern>lilypad.libs.io.netty</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.gson</pattern>
+                  <shadedPattern>lilypad.libs.com.google.gsony</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
