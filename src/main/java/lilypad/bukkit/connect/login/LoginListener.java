@@ -1,10 +1,7 @@
 package lilypad.bukkit.connect.login;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.UUID;
 
 import lilypad.bukkit.connect.ConnectPlugin;
