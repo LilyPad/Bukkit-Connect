@@ -27,6 +27,9 @@ public class LoginListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
 		LoginPayload payload = payloadCache.getByName(event.getName());
+		if(payload == null) {
+			event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "Error: Authentication to LilyPad failed");
+		}
 		// Store uuid
 		UUID uuid = UUID.fromString(payload.getUUID().substring(0, 8) + "-" + payload.getUUID().substring(8, 12) + "-" + payload.getUUID().substring(12, 16) + "-" + payload.getUUID().substring(16, 20) + "-" + payload.getUUID().substring(20, 32));
 		try {
