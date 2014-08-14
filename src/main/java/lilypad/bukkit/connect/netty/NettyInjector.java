@@ -1,6 +1,5 @@
 package lilypad.bukkit.connect.netty;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -20,15 +19,15 @@ public class NettyInjector {
 		Method serverGetHandle = server.getClass().getDeclaredMethod("getServer");
 		Object minecraftServer = serverGetHandle.invoke(server);
 		// Get Server Connection
-		String serverConnectionField = null;
-		for(Field field : minecraftServer.getClass().getSuperclass().getDeclaredFields()) {
-			if(!field.getType().getSimpleName().equals("ServerConnection")) {
+		Method serverConnectionMethod = null;
+		for(Method method : minecraftServer.getClass().getSuperclass().getDeclaredMethods()) {
+			if(!method.getReturnType().getSimpleName().equals("ServerConnection")) {
 				continue;
 			}
-			serverConnectionField = field.getName();
+			serverConnectionMethod = method;
 			break;
 		}
-		Object serverConnection = ReflectionUtils.getPrivateField(minecraftServer.getClass().getSuperclass(), minecraftServer, Object.class, serverConnectionField);
+		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// Get ChannelFuture List // TODO find the field dynamically
 		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "e");
 		// Iterate ChannelFutures

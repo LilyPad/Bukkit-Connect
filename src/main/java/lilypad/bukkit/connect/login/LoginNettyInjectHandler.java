@@ -55,7 +55,6 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 				throw new Exception(); // for lack of a better solution
 			}
 		} catch(Exception exception) {
-			exception.printStackTrace();
 			context.close();
 			return;
 		}
