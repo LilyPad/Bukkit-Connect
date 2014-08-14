@@ -1,24 +1,24 @@
-package lilypad.bukkit.connect;
+package lilypad.bukkit.connect.login;
 
 import com.google.gson.Gson;
 
-public class ConnectLoginPayload {
+public class LoginPayload {
 
 	private static final Gson gson = new Gson();
 	
-	public static ConnectLoginPayload decode(String string) throws Exception {
-		return gson.fromJson(string, ConnectLoginPayload.class);
+	public static LoginPayload decode(String string) throws Exception {
+		return gson.fromJson(string, LoginPayload.class);
 	}
 	
-	public static String encode(ConnectLoginPayload payload) throws Exception {
+	public static String encode(LoginPayload payload) throws Exception {
 		return gson.toJson(payload);
 	}
 	
 	public static class Property {
 		
-		public String n;
-		public String v;
-		public String s;
+		private String n;
+		private String v;
+		private String s;
 		
 		public Property() {
 			// empty
@@ -44,19 +44,19 @@ public class ConnectLoginPayload {
 		
 	}
 	
-	public String s;
-	public String h;
-	public String rIp;
-	public int rP;
-	public String n;
-	public String u;
-	public Property[] p;
+	private String s;
+	private String h;
+	private String rIp;
+	private int rP;
+	private String n;
+	private String u;
+	private Property[] p;
 	
-	public ConnectLoginPayload() {
+	public LoginPayload() {
 		// empty
 	}
 	
-	public ConnectLoginPayload(String securityKey, String host, String realIp, int realPort, String name, String uuid, Property[] properties) {
+	public LoginPayload(String securityKey, String host, String realIp, int realPort, String name, String uuid, Property[] properties) {
 		this.s = securityKey;
 		this.h = host;
 		this.rIp = realIp;

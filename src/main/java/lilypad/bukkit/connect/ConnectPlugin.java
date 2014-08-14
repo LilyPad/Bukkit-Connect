@@ -7,6 +7,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import lilypad.bukkit.connect.login.LoginListener;
+import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
+import lilypad.bukkit.connect.login.LoginPayloadCache;
+import lilypad.bukkit.connect.netty.NettyInjector;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.lib.ConnectImpl;
@@ -30,8 +34,17 @@ public class ConnectPlugin extends JavaPlugin {
 		this.connectThread = new ConnectThread(this);
 
 		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
-		ConnectPluginListener listener = new ConnectPluginListener(this);
+		LoginPayloadCache payloadCache = new LoginPayloadCache();
+		LoginListener listener = new LoginListener(this, payloadCache);
 		super.getServer().getPluginManager().registerEvents(listener, this);
+		try {
+			NettyInjector.inject(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+		} catch(Exception exception) {
+			exception.printStackTrace();
+			System.out.println("[Connect] Unable to start plugin - unsupported version?");
+			return;
+		}
+		
 		super.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			public void run() {
 				try {
@@ -54,6 +67,7 @@ public class ConnectPlugin extends JavaPlugin {
 
 					ConnectPlugin.this.connectThread.start();
 				} catch(Exception exception) {
+					exception.printStackTrace();
 					System.out.println("[Connect] Unable to start plugin - unsupported version?");
 				}
 			}

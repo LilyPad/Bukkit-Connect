@@ -6,4 +6,5 @@ author: LilyPad
 website: http://www.lilypadmc.org/
 
 load: STARTUP
+loadbefore: [ProtocolLib]
 main: ${main.class}
