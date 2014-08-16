@@ -14,10 +14,6 @@ public class LoginPayloadCache {
 		this.payloads.put(payload.getName(), payload);
 	}
 	
-	public LoginPayload removeByName(String name) {
-		return this.payloads.remove(name);
-	}
-	
 	public LoginPayload getByName(String name) {
 		return this.payloads.get(name);
 	}

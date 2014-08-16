@@ -27,10 +27,6 @@ public class LoginListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
 		LoginPayload payload = payloadCache.getByName(event.getName());
-		if(payload == null) {
-			event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "Error: Authentication to LilyPad failed");
-			return;
-		}
 		// Store uuid
 		UUID uuid = UUID.fromString(payload.getUUID().substring(0, 8) + "-" + payload.getUUID().substring(8, 12) + "-" + payload.getUUID().substring(12, 16) + "-" + payload.getUUID().substring(16, 20) + "-" + payload.getUUID().substring(20, 32));
 		try {
@@ -40,18 +36,10 @@ public class LoginListener implements Listener {
 		}
 	}
 	
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onAsyncPlayerPreLoginMonitor(AsyncPlayerPreLoginEvent event) {
-		if(event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
-			return;
-		}
-		this.payloadCache.removeByName(event.getName());
-	}
-	
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerLogin(PlayerLoginEvent event) {
 		Player player = event.getPlayer();
-		LoginPayload payload = payloadCache.removeByName(player.getName());
+		LoginPayload payload = payloadCache.getByName(player.getName());
 		// Store uuid
 		UUID uuid = UUID.fromString(payload.getUUID().substring(0, 8) + "-" + payload.getUUID().substring(8, 12) + "-" + payload.getUUID().substring(12, 16) + "-" + payload.getUUID().substring(16, 20) + "-" + payload.getUUID().substring(20, 32));
 		try {
