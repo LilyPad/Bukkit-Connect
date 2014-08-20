@@ -32,9 +32,9 @@ public class NettyDecoderHandler extends ByteToMessageDecoder {
 			}
 			// Iterate Out
 			Iterator<Object> iterator = out.iterator();
-			while(this.enabled && iterator.hasNext()) {
+			do {
 				this.handler.packetReceived(this, context, iterator.next());
-			}
+			} while(this.enabled && iterator.hasNext());
 		} else {
 			// Call Old Decode
 			this.oldDecoderMethod.invoke(this.oldDecoder, context, buf, out);

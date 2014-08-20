@@ -11,6 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import lilypad.bukkit.connect.injector.HandlerListInjector;
 import lilypad.bukkit.connect.injector.NettyInjector;
+import lilypad.bukkit.connect.injector.PacketInjector;
 import lilypad.bukkit.connect.login.LoginListener;
 import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
 import lilypad.bukkit.connect.login.LoginPayloadCache;
@@ -41,16 +42,17 @@ public class ConnectPlugin extends JavaPlugin {
 		LoginListener listener = new LoginListener(this, payloadCache);
 		super.getServer().getPluginManager().registerEvents(listener, this);
 		try {
-			NettyInjector.inject(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
 			HandlerListInjector.prioritize(this, AsyncPlayerPreLoginEvent.class);
 			HandlerListInjector.prioritize(this, PlayerLoginEvent.class);
+			NettyInjector.inject(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+			PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
 		} catch(Exception exception) {
 			exception.printStackTrace();
 			System.out.println("[Connect] Unable to start plugin - unsupported version?");
 			return;
 		}
 		
-		super.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+		super.getServer().getScheduler().runTask(this, new Runnable() {
 			public void run() {
 				try {
 					Object craftServer = ConnectPlugin.super.getServer();

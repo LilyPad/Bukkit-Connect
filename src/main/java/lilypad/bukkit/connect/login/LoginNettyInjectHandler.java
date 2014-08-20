@@ -23,7 +23,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 	}
 	
 	public void packetReceived(NettyDecoderHandler handler, ChannelHandlerContext context, Object object) throws Exception {
-		if(!object.getClass().getSimpleName().equals("PacketHandshakingInSetProtocol")) {
+		if(!object.getClass().getSimpleName().startsWith("PacketHandshakingInSetProtocol")) {
 			return;
 		}
 		handler.setEnabled(false);
@@ -32,7 +32,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 		String serverHost;
 		try {
 			if(this.serverHostFieldCache == null) {
-				for(Field field : object.getClass().getDeclaredFields()) {
+				for(Field field : object.getClass().getSuperclass().getDeclaredFields()) {
 					if(!field.getType().getSimpleName().equals("String")) {
 						continue;
 					}
@@ -40,7 +40,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 					break;
 				}
 			}
-			serverHost = ReflectionUtils.getPrivateField(object.getClass(), object, String.class, this.serverHostFieldCache);
+			serverHost = ReflectionUtils.getPrivateField(object.getClass().getSuperclass(), object, String.class, this.serverHostFieldCache);
 		} catch(Exception exception) {
 			exception.printStackTrace();
 			context.close();
@@ -68,7 +68,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 		
 		// Store the host
 		try {
-			ReflectionUtils.setFinalField(object.getClass(), object, this.serverHostFieldCache, payload.getHost());
+			ReflectionUtils.setFinalField(object.getClass().getSuperclass(), object, this.serverHostFieldCache, payload.getHost());
 		} catch(Exception exception) {
 			exception.printStackTrace();
 		}
