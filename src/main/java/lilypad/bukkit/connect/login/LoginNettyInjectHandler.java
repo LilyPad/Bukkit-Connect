@@ -6,8 +6,8 @@ import java.net.InetSocketAddress;
 import net.minecraft.util.io.netty.channel.AbstractChannel;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import lilypad.bukkit.connect.ConnectPlugin;
-import lilypad.bukkit.connect.netty.NettyDecoderHandler;
-import lilypad.bukkit.connect.netty.NettyInjectHandler;
+import lilypad.bukkit.connect.injector.NettyDecoderHandler;
+import lilypad.bukkit.connect.injector.NettyInjectHandler;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 
 public class LoginNettyInjectHandler implements NettyInjectHandler {

@@ -1,4 +1,4 @@
-package lilypad.bukkit.connect.netty;
+package lilypad.bukkit.connect.injector;
 
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 

@@ -1,4 +1,4 @@
-package lilypad.bukkit.connect.netty;
+package lilypad.bukkit.connect.injector;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
