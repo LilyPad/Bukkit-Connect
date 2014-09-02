@@ -67,9 +67,10 @@ public class OfflineInjector {
 		Constructor<?> objectConstructor = Object.class.getDeclaredConstructor();
 		Constructor<?> serializeConstructor = reflectionFactory.newConstructorForSerialization(offlineMinecraftServerJClass, objectConstructor);
 		Object offlineMinecraftServer = serializeConstructor.newInstance();
-		// ... set our delegate, and our craftserver
+		// ... set our delegate, among other stuff
 		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass(), offlineMinecraftServer, "delegate", minecraftServer);
 		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass().getSuperclass().getSuperclass(), offlineMinecraftServer, "server", server);
+		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass().getSuperclass().getSuperclass(), offlineMinecraftServer, "processQueue", ReflectionUtils.getPrivateField(minecraftServer.getClass().getSuperclass(), minecraftServer, Object.class, "processQueue"));
 		// get server connection
 		Method serverConnectionMethod = null;
 		for(Method method : minecraftServer.getClass().getSuperclass().getDeclaredMethods()) {
