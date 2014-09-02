@@ -65,8 +65,8 @@ public class OfflineInjector {
 		// ... create an instance of our class without calling the constructor
 		ReflectionFactory reflectionFactory = ReflectionFactory.getReflectionFactory();
 		Constructor<?> objectConstructor = Object.class.getDeclaredConstructor();
-		Constructor<?> serializeConsturctor = reflectionFactory.newConstructorForSerialization(offlineMinecraftServerJClass, objectConstructor);
-		Object offlineMinecraftServer = serializeConsturctor.newInstance();
+		Constructor<?> serializeConstructor = reflectionFactory.newConstructorForSerialization(offlineMinecraftServerJClass, objectConstructor);
+		Object offlineMinecraftServer = serializeConstructor.newInstance();
 		// ... set our delegate, and our craftserver
 		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass(), offlineMinecraftServer, "delegate", minecraftServer);
 		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass().getSuperclass().getSuperclass(), offlineMinecraftServer, "server", server);
@@ -80,7 +80,7 @@ public class OfflineInjector {
 			break;
 		}
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
-		// Set Server Connection MinecraftServer
+		// set server connection minecraftServer
 		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, "d", offlineMinecraftServer); // TODO dynamically find this field
 	}
 	
