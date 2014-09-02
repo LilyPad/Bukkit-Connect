@@ -1,6 +1,5 @@
 package lilypad.bukkit.connect;
 
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -11,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import lilypad.bukkit.connect.injector.HandlerListInjector;
 import lilypad.bukkit.connect.injector.NettyInjector;
+import lilypad.bukkit.connect.injector.OfflineInjector;
 import lilypad.bukkit.connect.injector.PacketInjector;
 import lilypad.bukkit.connect.login.LoginListener;
 import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
@@ -42,10 +42,15 @@ public class ConnectPlugin extends JavaPlugin {
 		LoginListener listener = new LoginListener(this, payloadCache);
 		super.getServer().getPluginManager().registerEvents(listener, this);
 		try {
+			// Prioritize our events
 			HandlerListInjector.prioritize(this, AsyncPlayerPreLoginEvent.class);
 			HandlerListInjector.prioritize(this, PlayerLoginEvent.class);
-			NettyInjector.inject(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+			// Modify handshake packet max string size
 			PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
+			// Handle LilyPad handshake packet
+			NettyInjector.inject(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+			// Pseudo offline mode
+			OfflineInjector.inject(super.getServer());
 		} catch(Exception exception) {
 			exception.printStackTrace();
 			System.out.println("[Connect] Unable to start plugin - unsupported version?");
@@ -55,23 +60,11 @@ public class ConnectPlugin extends JavaPlugin {
 		super.getServer().getScheduler().runTask(this, new Runnable() {
 			public void run() {
 				try {
-					Object craftServer = ConnectPlugin.super.getServer();
-					Object minecraftServer = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "console");
-
-					// Set Offline Mode
-					try {
-						Object booleanWrapperOnline = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "online");
-						ReflectionUtils.setFinalField(booleanWrapperOnline.getClass(), booleanWrapperOnline, "value", false);
-					} catch(Exception exception) {
-						System.out.println("[Connect] Unable to set offline mode in CraftBukkit - older version?");
-					}
-					Method setOnlineMode = minecraftServer.getClass().getMethod("setOnlineMode", boolean.class);
-					setOnlineMode.invoke(minecraftServer, Boolean.FALSE);
-
 					// Connection Throttle
+					Object craftServer = ConnectPlugin.super.getServer();
 					YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, YamlConfiguration.class, "configuration");
 					configuration.set("settings.connection-throttle", 0);
-
+					// Start
 					ConnectPlugin.this.connectThread.start();
 				} catch(Exception exception) {
 					exception.printStackTrace();
