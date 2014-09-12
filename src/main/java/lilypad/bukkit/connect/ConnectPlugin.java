@@ -39,18 +39,21 @@ public class ConnectPlugin extends JavaPlugin {
 		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
 		
 		LoginPayloadCache payloadCache = new LoginPayloadCache();
-		LoginListener listener = new LoginListener(this, payloadCache);
-		super.getServer().getPluginManager().registerEvents(listener, this);
 		try {
-			// Prioritize our events
-			HandlerListInjector.prioritize(this, AsyncPlayerPreLoginEvent.class);
-			HandlerListInjector.prioritize(this, PlayerLoginEvent.class);
 			// Modify handshake packet max string size
 			PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
 			// Handle LilyPad handshake packet
 			NettyInjector.inject(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
-			// Pseudo offline mode
-			OfflineInjector.inject(super.getServer());
+			// If we are in online-mode
+			if (super.getServer().getOnlineMode()) {
+				// Login listener will restore UUIDs
+				super.getServer().getPluginManager().registerEvents(new LoginListener(this, payloadCache), this);
+				// Prioritize our events
+				HandlerListInjector.prioritize(this, AsyncPlayerPreLoginEvent.class);
+				HandlerListInjector.prioritize(this, PlayerLoginEvent.class);
+				// Pseudo offline mode
+				OfflineInjector.inject(super.getServer());
+			}
 		} catch(Exception exception) {
 			exception.printStackTrace();
 			System.out.println("[Connect] Unable to start plugin - unsupported version?");
