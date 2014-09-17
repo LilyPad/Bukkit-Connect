@@ -12,6 +12,7 @@ import lilypad.bukkit.connect.util.ReflectionUtils;
 
 public class LoginNettyInjectHandler implements NettyInjectHandler {
 
+	private String requestedStateFieldCache;
 	private String serverHostFieldCache;
 	
 	private ConnectPlugin connectPlugin;
@@ -27,6 +28,27 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 			return;
 		}
 		handler.setEnabled(false);
+		
+		// Get requested state
+		try {
+			if(this.requestedStateFieldCache == null) {
+				for(Field field : object.getClass().getDeclaredFields()) {
+					if(!field.getType().getSimpleName().equals("EnumProtocol")) {
+						continue;
+					}
+					this.requestedStateFieldCache = field.getName();
+					break;
+				}
+			}
+			Object requestedStateEnum = ReflectionUtils.getPrivateField(object.getClass(), object, Object.class, this.requestedStateFieldCache);
+			if(requestedStateEnum.toString().equals("STATUS")) {
+				return;
+			}
+		} catch(Exception exception) {
+			exception.printStackTrace();
+			context.close();
+			return;
+		}
 		
 		// Get server host
 		String serverHost;

@@ -37,7 +37,10 @@ public class OfflineInjector {
 		// ... proxy all declared methods recursively
 		CtClass cursorClass = minecraftServerClass;
 		while(true) {
-			for(CtMethod method : minecraftServerClass.getDeclaredMethods()) {
+			for(CtMethod method : cursorClass.getDeclaredMethods()) {
+				if(Modifier.isFinal(method.getModifiers())) {
+					continue;
+				}
 				if(Modifier.isPrivate(method.getModifiers())) {
 					continue;
 				}
@@ -53,6 +56,9 @@ public class OfflineInjector {
 			}
 			cursorClass = cursorClass.getSuperclass();
 			if(cursorClass == null) {
+				break;
+			}
+			if(cursorClass.getName().equals("java.lang.Object")) {
 				break;
 			}
 		}

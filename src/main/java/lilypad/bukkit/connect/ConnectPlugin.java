@@ -75,7 +75,6 @@ public class ConnectPlugin extends JavaPlugin {
 				}
 			}
 		});
-
 	}
 
 	@Override
