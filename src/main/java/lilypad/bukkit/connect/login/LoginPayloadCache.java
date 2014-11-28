@@ -1,21 +1,20 @@
 package lilypad.bukkit.connect.login;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 public class LoginPayloadCache {
 
-	@SuppressWarnings("deprecation") // TODO use stuff not deprecated
-	private Map<String, LoginPayload> payloads = new MapMaker().expireAfterWrite(30, TimeUnit.SECONDS).makeMap();
+	private Cache<String, LoginPayload> payloads = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.SECONDS).build();
 	
 	public void submit(LoginPayload payload) {
 		this.payloads.put(payload.getName(), payload);
 	}
 	
 	public LoginPayload getByName(String name) {
-		return this.payloads.get(name);
+		return this.payloads.getIfPresent(name);
 	}
 	
 }

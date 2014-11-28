@@ -27,6 +27,9 @@ public class LoginListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
 		LoginPayload payload = payloadCache.getByName(event.getName());
+		if (payload == null) {
+			event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "LilyPad: Internal server error");
+		}
 		// Store uuid
 		UUID uuid = UUID.fromString(payload.getUUID().substring(0, 8) + "-" + payload.getUUID().substring(8, 12) + "-" + payload.getUUID().substring(12, 16) + "-" + payload.getUUID().substring(16, 20) + "-" + payload.getUUID().substring(20, 32));
 		try {
@@ -46,7 +49,7 @@ public class LoginListener implements Listener {
 			// Entity
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
 			Object entityPlayer = getHandleMethod.invoke(player);
-			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "i");
+			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "bF");
 			ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", uuid);
 			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", uuid);
 			// User cache
@@ -62,7 +65,7 @@ public class LoginListener implements Listener {
 			Method gameProfilePropertiesClear = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("clear");
 			Method gameProfilePropertiesPut = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("put", Object.class, Object.class);
 			gameProfilePropertiesClear.invoke(gameProfileProperties);
-			Constructor<?> propertyConstructor = Class.forName("net.minecraft.util.com.mojang.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
+			Constructor<?> propertyConstructor = Class.forName("com.mojang.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
 			for(int i = 0; i < payload.getProperties().length; i++) {
 				String name = payload.getProperties()[i].getName();
 				gameProfilePropertiesPut.invoke(gameProfileProperties, name, propertyConstructor.newInstance(name, payload.getProperties()[i].getValue(), payload.getProperties()[i].getSignature()));

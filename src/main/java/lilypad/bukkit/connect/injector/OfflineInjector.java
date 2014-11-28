@@ -88,7 +88,7 @@ public class OfflineInjector {
 		}
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// set server connection minecraftServer
-		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, "d", offlineMinecraftServer); // TODO dynamically find this field
+		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, "e", offlineMinecraftServer); // TODO dynamically find this field
 	}
 	
 }

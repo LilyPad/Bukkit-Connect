@@ -1,10 +1,11 @@
 package lilypad.bukkit.connect.login;
 
+import io.netty.channel.AbstractChannel;
+import io.netty.channel.ChannelHandlerContext;
+
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 
-import net.minecraft.util.io.netty.channel.AbstractChannel;
-import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import lilypad.bukkit.connect.ConnectPlugin;
 import lilypad.bukkit.connect.injector.NettyDecoderHandler;
 import lilypad.bukkit.connect.injector.NettyInjectHandler;
@@ -102,11 +103,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 			ReflectionUtils.setFinalField(AbstractChannel.class, context.channel(), "remoteAddress", newRemoteAddress);
 			// MC
 			Object networkManager = context.channel().pipeline().get("packet_handler");
-			try {
-				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "n", newRemoteAddress);
-			} catch(Exception exception1) {
-				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", newRemoteAddress);
-			}
+			ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "j", newRemoteAddress);
 		} catch(Exception exception) {
 			exception.printStackTrace();
 		}

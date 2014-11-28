@@ -1,14 +1,15 @@
 package lilypad.bukkit.connect.injector;
 
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
+
 import java.lang.reflect.Method;
 import java.util.List;
 
 import lilypad.bukkit.connect.util.ReflectionUtils;
-import net.minecraft.util.io.netty.channel.ChannelFuture;
-import net.minecraft.util.io.netty.channel.ChannelHandler;
-import net.minecraft.util.io.netty.channel.ChannelInitializer;
-import net.minecraft.util.io.netty.channel.ChannelPipeline;
-import net.minecraft.util.io.netty.channel.socket.SocketChannel;
 
 import org.bukkit.Server;
 
@@ -29,7 +30,7 @@ public class NettyInjector {
 		}
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// Get ChannelFuture List // TODO find the field dynamically
-		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "e");
+		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "f");
 		// Iterate ChannelFutures
 		for(ChannelFuture channelFuture : channelFutureList) {
 			// Get ChannelPipeline

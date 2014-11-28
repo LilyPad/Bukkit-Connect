@@ -1,6 +1,6 @@
 package lilypad.bukkit.connect.injector;
 
-import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelHandlerContext;
 
 public interface NettyInjectHandler {
 

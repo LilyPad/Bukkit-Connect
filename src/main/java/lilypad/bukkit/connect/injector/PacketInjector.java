@@ -25,7 +25,9 @@ public class PacketInjector {
 		// get the packet
 		Class<?> enumProtocolClass = Class.forName(minecraftPackage + ".EnumProtocol");
 		Object enumProtocol = ReflectionUtils.getPrivateField(enumProtocolClass, null, enumProtocolClass, protocol.toUpperCase());
-		Map serverBound = ReflectionUtils.getPrivateField(enumProtocolClass, enumProtocol, Map.class, "h");
+		Map protocolDirections = ReflectionUtils.getPrivateField(enumProtocolClass, enumProtocol, Map.class, "h");
+		Object serverBoundDirection = ReflectionUtils.getPrivateField(Class.forName(minecraftPackage + ".EnumProtocolDirection"), null, Object.class, "SERVERBOUND");
+		Map serverBound = (Map) protocolDirections.get(serverBoundDirection);
 		if(!serverBound.containsKey(packetId)) {
 			throw new IllegalArgumentException("Packet Id does not exist: " + packetId);
 		}
@@ -52,7 +54,7 @@ public class PacketInjector {
 				methodCall.replace("{ $1 = " + maxSize + "; $_ = $proceed($$); }");
 			}
 		});
-		CtMethod handleCtMethod = packetCtClassProxy.getDeclaredMethod("handle", new CtClass[] { classPool.getCtClass(minecraftPackage + ".PacketListener") });
+		CtMethod handleCtMethod = packetCtClassProxy.getDeclaredMethod("a", new CtClass[] { classPool.getCtClass(minecraftPackage + ".PacketListener") });
 		handleCtMethod.instrument(new ExprEditor() {
 			public void edit(MethodCall methodCall) throws CannotCompileException {
 				try {

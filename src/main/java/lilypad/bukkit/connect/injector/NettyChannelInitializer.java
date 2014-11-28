@@ -1,11 +1,11 @@
 package lilypad.bukkit.connect.injector;
 
-import java.lang.reflect.Method;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.ByteToMessageDecoder;
 
-import net.minecraft.util.io.netty.channel.Channel;
-import net.minecraft.util.io.netty.channel.ChannelInitializer;
-import net.minecraft.util.io.netty.channel.socket.SocketChannel;
-import net.minecraft.util.io.netty.handler.codec.ByteToMessageDecoder;
+import java.lang.reflect.Method;
 
 public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
