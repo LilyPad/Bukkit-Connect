@@ -24,7 +24,7 @@ public class ConnectPlugin extends JavaPlugin {
 	private Connect connect;
 	private ConnectThread connectThread;
 	private String securityKey;
-
+	
 	@Override
 	public void onLoad() {
 		super.getConfig().options().copyDefaults(true);
@@ -109,5 +109,4 @@ public class ConnectPlugin extends JavaPlugin {
 	public void setSecurityKey(String securityKey) {
 		this.securityKey = securityKey;
 	}
-
 }
