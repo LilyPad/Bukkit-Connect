@@ -28,7 +28,10 @@ public class NettyInjector {
 			serverConnectionMethod = method;
 			break;
 		}
-		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
+        if (serverConnectionMethod == null) {
+            throw new RuntimeException("Could not find ServerConnection.");
+        }
+        Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// Get ChannelFuture List // TODO find the field dynamically
 		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "f");
 		// Iterate ChannelFutures
