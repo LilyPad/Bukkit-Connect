@@ -83,7 +83,7 @@ public class LoginListener implements Listener {
 		} else if (this.connectPlugin.getServer().getIPBans().contains(payload.getRealIp())) {
 			// TODO reason and expiration? Is this possible?
 			event.disallow(PlayerLoginEvent.Result.KICK_BANNED, "Your IP address is banned from this server!");
-		} else if (this.connectPlugin.getServer().getOnlinePlayers().length >= this.connectPlugin.getServer().getMaxPlayers()) {
+		} else if (this.connectPlugin.getServer().getOnlinePlayers().size() >= this.connectPlugin.getServer().getMaxPlayers()) {
 			event.disallow(PlayerLoginEvent.Result.KICK_FULL, "The server is full!");
 		} else if (event.getResult() != PlayerLoginEvent.Result.KICK_OTHER) {
 			event.allow();

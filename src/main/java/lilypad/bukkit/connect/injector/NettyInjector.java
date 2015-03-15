@@ -30,7 +30,7 @@ public class NettyInjector {
 		}
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// Get ChannelFuture List // TODO find the field dynamically
-		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "f");
+		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "g");
 		// Iterate ChannelFutures
 		for(ChannelFuture channelFuture : channelFutureList) {
 			// Get ChannelPipeline

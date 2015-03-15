@@ -25,7 +25,7 @@ public class PacketInjector {
 		// get the packet
 		Class<?> enumProtocolClass = Class.forName(minecraftPackage + ".EnumProtocol");
 		Object enumProtocol = ReflectionUtils.getPrivateField(enumProtocolClass, null, enumProtocolClass, protocol.toUpperCase());
-		Map protocolDirections = ReflectionUtils.getPrivateField(enumProtocolClass, enumProtocol, Map.class, "h");
+		Map protocolDirections = ReflectionUtils.getPrivateField(enumProtocolClass, enumProtocol, Map.class, "j");
 		Object serverBoundDirection = ReflectionUtils.getPrivateField(Class.forName(minecraftPackage + ".EnumProtocolDirection"), null, Object.class, "SERVERBOUND");
 		Map serverBound = (Map) protocolDirections.get(serverBoundDirection);
 		if(!serverBound.containsKey(packetId)) {
