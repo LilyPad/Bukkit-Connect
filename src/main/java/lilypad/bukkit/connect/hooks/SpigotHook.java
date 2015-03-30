@@ -1,7 +1,6 @@
 package lilypad.bukkit.connect.hooks;
 
-public final class SpigotHook
-{
+public final class SpigotHook {
 
       private boolean isSpigot;
       private String whitelistMessage;
@@ -13,7 +12,7 @@ public final class SpigotHook
             try {
                   spigotConfig = Class.forName("org.spigotmc.SpigotConfig");
                   this.isSpigot = true;
-            } catch (Exception exception) {
+            } catch(Exception exception) {
                   this.isSpigot = false;
                   return;
             }
