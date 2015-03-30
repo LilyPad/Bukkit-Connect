@@ -24,7 +24,7 @@ public class ConnectThread implements Runnable {
 			return;
 		}
 		this.thread = new Thread(this);
-		this.thread.setName("connect-thread");
+		this.thread.setName("LilyPad Bukkkit-Connect Thread");
 		this.thread.start();
 	}
 
