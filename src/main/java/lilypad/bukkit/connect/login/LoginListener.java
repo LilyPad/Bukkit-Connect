@@ -90,7 +90,7 @@ public class LoginListener implements Listener {
 			banMessage.append(banEntry.getReason());
 
 			if (banEntry.getExpiration() != null) {
-				if (banEntry.getExpiration().compareTo(new Date()) < 0) {
+				if (banEntry.getExpiration().compareTo(new Date()) > 0) {
 					banMessage.append("\nYour ban will be removed on " + vanillaBanFormat.format(banEntry.getExpiration()));
 					event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage.toString());
 					return;
@@ -110,7 +110,7 @@ public class LoginListener implements Listener {
 			banMessage.append(banEntry.getReason());
 
 			if (banEntry.getExpiration() != null) {
-				if (banEntry.getExpiration().compareTo(new Date()) < 0) {
+				if (banEntry.getExpiration().compareTo(new Date()) > 0) {
 					banMessage.append("\nYour ban will be removed on " + vanillaBanFormat.format(banEntry.getExpiration()));
 					event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage.toString());
 					return;
