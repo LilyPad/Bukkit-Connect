@@ -86,6 +86,9 @@ public class OfflineInjector {
 			serverConnectionMethod = method;
 			break;
 		}
+        if (serverConnectionMethod == null) {
+            throw new RuntimeException("Could not find ServerConnection.");
+        }
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// set server connection minecraftServer
 		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, "f", offlineMinecraftServer); // TODO dynamically find this field
