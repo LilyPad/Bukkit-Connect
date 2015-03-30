@@ -2,6 +2,7 @@ package lilypad.bukkit.connect;
 
 import java.net.InetSocketAddress;
 
+import lilypad.bukkit.connect.hooks.SpigotHook;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -21,6 +22,7 @@ import lilypad.client.connect.lib.ConnectImpl;
 
 public class ConnectPlugin extends JavaPlugin {
 
+	private SpigotHook spigotHook;
 	private Connect connect;
 	private ConnectThread connectThread;
 	private String securityKey;
@@ -34,6 +36,8 @@ public class ConnectPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
+		this.spigotHook = new SpigotHook();
+
 		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
 		this.connectThread = new ConnectThread(this);
 		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
@@ -108,6 +112,10 @@ public class ConnectPlugin extends JavaPlugin {
 
 	public void setSecurityKey(String securityKey) {
 		this.securityKey = securityKey;
+	}
+
+	public SpigotHook getSpigotHook() {
+		return this.spigotHook;
 	}
 
 }
