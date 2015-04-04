@@ -18,9 +18,11 @@ import lilypad.bukkit.connect.login.LoginPayloadCache;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.lib.ConnectImpl;
+import lilypad.bukkit.connect.hooks.SpigotHook;
 
 public class ConnectPlugin extends JavaPlugin {
 
+	private SpigotHook spigotHook = new SpigotHook();
 	private Connect connect;
 	private ConnectThread connectThread;
 	private String securityKey;
@@ -108,6 +110,10 @@ public class ConnectPlugin extends JavaPlugin {
 
 	public void setSecurityKey(String securityKey) {
 		this.securityKey = securityKey;
+	}
+
+	public SpigotHook getSpigotHook() {
+		return this.spigotHook;
 	}
 
 }
