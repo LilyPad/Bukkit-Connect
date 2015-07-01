@@ -22,6 +22,7 @@ public class SpigotHook {
             try {
                   this.whitelistMessage = ReflectionUtils.getPrivateField(spigotConfig, null, String.class, "whitelistMessage");
                   this.serverFullMessage = ReflectionUtils.getPrivateField(spigotConfig, null, String.class, "serverFullMessage");
+                  ReflectionUtils.setFinalField(spigotConfig, null, "saveUserCacheOnStopOnly", true);
             } catch(Exception exception) {
                   exception.printStackTrace();
             }
