@@ -118,7 +118,7 @@ public class LoginListener implements Listener {
 			} else {
 				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage.toString());
 			}
-		} else if (this.connectPlugin.getServer().getOnlinePlayers().size() >= this.connectPlugin.getServer().getMaxPlayers()) {
+		} else if (this.connectPlugin.getServer().getOnlinePlayers().size() >= this.connectPlugin.getServer().getMaxPlayers() && !player.hasPermission("lilypad.joinfullserver")) {
 			event.disallow(PlayerLoginEvent.Result.KICK_FULL, this.connectPlugin.getSpigotHook().isSpigot() ? this.connectPlugin.getSpigotHook().getServerFullMessage() : "The server is full!");
 		} else if (event.getResult() != PlayerLoginEvent.Result.KICK_OTHER) {
 			event.allow();
