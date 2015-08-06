@@ -98,7 +98,7 @@ public class LoginListener implements Listener {
 			} else {
 				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage.toString());
 			}
-		} else if (this.connectPlugin.getServer().hasWhitelist() && !player.isWhitelisted()) {
+		} else if (this.connectPlugin.getServer().hasWhitelist() && !player.isWhitelisted() && !player.isOp()) {
 			event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, this.connectPlugin.getSpigotHook().isSpigot() ? this.connectPlugin.getSpigotHook().getWhitelistMessage() : "You are not white-listed on this server!");
 		} else if (this.connectPlugin.getServer().getIPBans().contains(payload.getRealIp())) {
 			BanList banList = this.connectPlugin.getServer().getBanList(BanList.Type.IP);
