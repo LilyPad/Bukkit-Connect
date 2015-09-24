@@ -26,6 +26,7 @@ public class ConnectPlugin extends JavaPlugin {
 	private Connect connect;
 	private ConnectThread connectThread;
 	private String securityKey;
+	private int commonPort;
 
 	@Override
 	public void onLoad() {
@@ -45,7 +46,7 @@ public class ConnectPlugin extends JavaPlugin {
 			// Modify handshake packet max string size
 			PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
 			// Handle LilyPad handshake packet
-			NettyInjector.inject(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+			commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
 			// If we are in online-mode
 			if (super.getServer().getOnlineMode()) {
 				// Login listener will restore UUIDs
@@ -97,7 +98,15 @@ public class ConnectPlugin extends JavaPlugin {
 	}
 
 	public InetSocketAddress getInboundAddress() {
-		return new InetSocketAddress(super.getServer().getIp().isEmpty() ? "0.0.0.0" : super.getServer().getIp(), super.getServer().getPort());
+		String ip = super.getServer().getIp();
+		if (ip.isEmpty()) {
+			ip = "0.0.0.0";
+		}
+		int port = super.getServer().getPort();
+		if (port == 0) {
+			port = this.commonPort;
+		}
+		return new InetSocketAddress(ip, port);
 	}
 
 	public Connect getConnect() {
