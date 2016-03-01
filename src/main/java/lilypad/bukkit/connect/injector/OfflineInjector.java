@@ -63,9 +63,9 @@ public class OfflineInjector {
 			}
 		}
 		// ... make a blank constructor
-		CtConstructor constructor = new CtConstructor(new CtClass[] { }, offlineMinecraftServerClass);
-		constructor.setBody("{ super(null); }");
-		offlineMinecraftServerClass.addConstructor(constructor);
+//		CtConstructor constructor = new CtConstructor(new CtClass[] { }, offlineMinecraftServerClass);
+//		constructor.setBody("{ super(null); }");
+//		offlineMinecraftServerClass.addConstructor(constructor);
 		// ... create our class
 		Class<?> offlineMinecraftServerJClass = offlineMinecraftServerClass.toClass();
 		// ... create an instance of our class without calling the constructor
