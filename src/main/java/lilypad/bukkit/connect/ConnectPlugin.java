@@ -47,8 +47,10 @@ public class ConnectPlugin extends JavaPlugin {
             PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
             // Handle LilyPad handshake packet
             if (super.getServer().getPluginManager().isPluginEnabled("ProtocolLib")) {
-                commonPort = ProtocolLibPacketAdapter.hookAndFindPort(this, payloadCache);
+                System.out.println("Hooking ProtocolLib...");
+                commonPort = ProtocolLibPacketAdapter.hookAndFindPort(super.getServer(), this, payloadCache);
             } else {
+                System.out.println("Injecting Netty...");
                 commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
             }
             // If we are in online-mode

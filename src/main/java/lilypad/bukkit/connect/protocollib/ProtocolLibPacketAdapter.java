@@ -5,14 +5,16 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.injector.server.TemporaryPlayerFactory;
-import io.netty.channel.AbstractChannel;
-import io.netty.channel.Channel;
+import io.netty.channel.*;
 import lilypad.bukkit.connect.ConnectPlugin;
 import lilypad.bukkit.connect.login.LoginPayload;
 import lilypad.bukkit.connect.login.LoginPayloadCache;
 import lilypad.bukkit.connect.util.ReflectionUtils;
+import org.bukkit.Server;
 
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 public class ProtocolLibPacketAdapter extends PacketAdapter {
 
@@ -25,9 +27,30 @@ public class ProtocolLibPacketAdapter extends PacketAdapter {
         this.payloadCache = payloadCache;
     }
 
-    public static int hookAndFindPort(ConnectPlugin plugin, LoginPayloadCache payloadCache) {
+    public static int hookAndFindPort(Server server, ConnectPlugin plugin, LoginPayloadCache payloadCache) throws Exception {
         ProtocolLibrary.getProtocolManager().addPacketListener(new ProtocolLibPacketAdapter(plugin, payloadCache));
-        return 0;
+
+        Method serverGetHandle = server.getClass().getDeclaredMethod("getServer");
+        Object minecraftServer = serverGetHandle.invoke(server);
+        // Get Server Connection
+        Method serverConnectionMethod = null;
+        for(Method method : minecraftServer.getClass().getSuperclass().getDeclaredMethods()) {
+            if(!method.getReturnType().getSimpleName().equals("ServerConnection")) {
+                continue;
+            }
+            serverConnectionMethod = method;
+            break;
+        }
+        Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
+        // Get ChannelFuture List // TODO find the field dynamically
+        List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "g");
+        // Iterate ChannelFutures
+        int commonPort = 0;
+        for(ChannelFuture channelFuture : channelFutureList) {
+            // Update Common Port
+            commonPort = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort();
+        }
+        return commonPort;
     }
 
     private void kick(PacketEvent event) {
