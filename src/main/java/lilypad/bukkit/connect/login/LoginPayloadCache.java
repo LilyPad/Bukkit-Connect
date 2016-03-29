@@ -7,7 +7,7 @@ import com.google.common.cache.CacheBuilder;
 
 public class LoginPayloadCache {
 
-	private Cache<String, LoginPayload> payloads = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.SECONDS).build();
+	private Cache<String, LoginPayload> payloads = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.SECONDS).build();
 	
 	public void submit(LoginPayload payload) {
 		this.payloads.put(payload.getName(), payload);

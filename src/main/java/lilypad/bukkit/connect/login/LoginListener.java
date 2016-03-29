@@ -49,6 +49,10 @@ public class LoginListener implements Listener {
 	public void onPlayerLogin(PlayerLoginEvent event) {
 		Player player = event.getPlayer();
 		LoginPayload payload = payloadCache.getByName(player.getName());
+		if (payload == null) {
+			event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "LilyPad: Internal server error");
+			return;
+		}
 		// Store uuid
 		UUID uuid = UUID.fromString(payload.getUUID().substring(0, 8) + "-" + payload.getUUID().substring(8, 12) + "-" + payload.getUUID().substring(12, 16) + "-" + payload.getUUID().substring(16, 20) + "-" + payload.getUUID().substring(20, 32));
 		try {
