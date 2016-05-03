@@ -12,6 +12,7 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import lilypad.bukkit.connect.ConnectPlugin;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 
 import org.bukkit.Server;
@@ -63,9 +64,13 @@ public class OfflineInjector {
 			}
 		}
 		// ... make a blank constructor
-//		CtConstructor constructor = new CtConstructor(new CtClass[] { }, offlineMinecraftServerClass);
-//		constructor.setBody("{ super(null); }");
-//		offlineMinecraftServerClass.addConstructor(constructor);
+		// don't need to make a blank constructor for 1.9
+		if (!ConnectPlugin.getProtocol().getGeneralVersion().equalsIgnoreCase("1.9")) {
+			CtConstructor constructor = new CtConstructor(new CtClass[] { }, offlineMinecraftServerClass);
+			constructor.setBody("{ super(null); }");
+			offlineMinecraftServerClass.addConstructor(constructor);
+		}
+
 		// ... create our class
 		Class<?> offlineMinecraftServerJClass = offlineMinecraftServerClass.toClass();
 		// ... create an instance of our class without calling the constructor
@@ -88,7 +93,7 @@ public class OfflineInjector {
 		}
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// set server connection minecraftServer
-		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, "f", offlineMinecraftServer); // TODO dynamically find this field
+		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, ConnectPlugin.getProtocol().getOfflineInjectorServerConnection(), offlineMinecraftServer);
 	}
 	
 }
