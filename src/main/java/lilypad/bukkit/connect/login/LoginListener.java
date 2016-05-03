@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import lilypad.bukkit.connect.ConnectPlugin;
@@ -123,11 +124,23 @@ public class LoginListener implements Listener {
 			} else {
 				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage.toString());
 			}
-		} else if (this.connectPlugin.getServer().getOnlinePlayers().size() /* TODO: find some handy guava method that will size both arrays and sets */>= this.connectPlugin.getServer().getMaxPlayers()) {
+		} else if (sizeOf(this.connectPlugin.getServer().getOnlinePlayers()) >= this.connectPlugin.getServer().getMaxPlayers()) {
 			event.disallow(PlayerLoginEvent.Result.KICK_FULL, this.connectPlugin.getSpigotHook().isSpigot() ? this.connectPlugin.getSpigotHook().getServerFullMessage() : "The server is full!");
 		} else if (event.getResult() != PlayerLoginEvent.Result.KICK_OTHER) {
 			event.allow();
 		}
+	}
+	
+	public int sizeOf(Object list) {
+		if (list instanceof List) {
+			return ((List<?>) list).size();
+		}
+		
+		if (list instanceof Player[]) {
+			return ((Player[]) list).length;
+		}
+		
+		return 0;
 	}
 
 }

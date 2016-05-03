@@ -15,6 +15,9 @@ import lilypad.bukkit.connect.login.LoginListener;
 import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
 import lilypad.bukkit.connect.login.LoginPayloadCache;
 import lilypad.bukkit.connect.protocol.IProtocol;
+import lilypad.bukkit.connect.protocol.Protocol1_7_R4;
+import lilypad.bukkit.connect.protocol.Protocol1_8_R1;
+import lilypad.bukkit.connect.protocol.Protocol1_8_R2;
 import lilypad.bukkit.connect.protocol.Protocol1_9_R1;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
@@ -43,6 +46,12 @@ public class ConnectPlugin extends JavaPlugin {
 		String version = super.getServer().getClass().getPackage().getName().replace(".",  ",").split(",")[3];
 		
 		switch (version) {
+		case "v1_7_R4":
+			protocol = new Protocol1_7_R4();
+		case "v1_8_R1":
+			protocol = new Protocol1_8_R1();
+		case "v1_8_R2":
+			protocol = new Protocol1_8_R2();
 		case "v1_9_R1":
 			protocol = new Protocol1_9_R1();
 			break;

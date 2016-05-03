@@ -24,11 +24,16 @@ public class PacketInjector {
 		String minecraftServerClassName = minecraftServer.getClass().getName();
 		final String minecraftPackage = minecraftServerClassName.substring(0, minecraftServerClassName.lastIndexOf('.'));
 		// get the packet
+		Map serverBound;
 		Class<?> enumProtocolClass = Class.forName(minecraftPackage + ".EnumProtocol");
-		Object enumProtocol = ReflectionUtils.getPrivateField(enumProtocolClass, null, enumProtocolClass, protocol.toUpperCase());
-		Map protocolDirections = ReflectionUtils.getPrivateField(enumProtocolClass, enumProtocol, Map.class, ConnectPlugin.getProtocol().getPacketInjectorProtocolDirections());
-		Object serverBoundDirection = ReflectionUtils.getPrivateField(Class.forName(minecraftPackage + ".EnumProtocolDirection"), null, Object.class, "SERVERBOUND");
-		Map serverBound = (Map) protocolDirections.get(serverBoundDirection);
+		Object enumProtocol = ReflectionUtils.getPrivateField(enumProtocolClass, null, enumProtocolClass, protocol.toUpperCase());		
+		if (ConnectPlugin.getProtocol().getGeneralVersion().equalsIgnoreCase("1.7")) {
+			serverBound = ReflectionUtils.getPrivateField(enumProtocolClass, enumProtocol, Map.class, ConnectPlugin.getProtocol().getPacketInjectorProtocolDirections());
+		} else {
+			Map protocolDirections = ReflectionUtils.getPrivateField(enumProtocolClass, enumProtocol, Map.class, ConnectPlugin.getProtocol().getPacketInjectorProtocolDirections());
+			Object serverBoundDirection = ReflectionUtils.getPrivateField(Class.forName(minecraftPackage + ".EnumProtocolDirection"), null, Object.class, "SERVERBOUND");
+			serverBound = (Map) protocolDirections.get(serverBoundDirection);
+		}
 		if(!serverBound.containsKey(packetId)) {
 			throw new IllegalArgumentException("Packet Id does not exist: " + packetId);
 		}
