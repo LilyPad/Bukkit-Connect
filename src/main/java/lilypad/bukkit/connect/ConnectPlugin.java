@@ -15,7 +15,6 @@ import lilypad.bukkit.connect.login.LoginListener;
 import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
 import lilypad.bukkit.connect.login.LoginPayloadCache;
 import lilypad.bukkit.connect.protocol.IProtocol;
-import lilypad.bukkit.connect.protocol.Protocol1_7_R4;
 import lilypad.bukkit.connect.protocol.Protocol1_8_R1;
 import lilypad.bukkit.connect.protocol.Protocol1_8_R2;
 import lilypad.bukkit.connect.protocol.Protocol1_9_R1;
@@ -46,18 +45,19 @@ public class ConnectPlugin extends JavaPlugin {
 		String version = super.getServer().getClass().getPackage().getName().replace(".",  ",").split(",")[3];
 		
 		switch (version) {
-		case "v1_7_R4":
-			protocol = new Protocol1_7_R4();
 		case "v1_8_R1":
 			protocol = new Protocol1_8_R1();
+			break;
 		case "v1_8_R2":
+		case "v1_8_R3":
 			protocol = new Protocol1_8_R2();
+			break;
 		case "v1_9_R1":
 			protocol = new Protocol1_9_R1();
 			break;
 		default:
 			System.out.println("[Connect] Unable to start plugin - unsupported version. Please retrieve the newest version at http://lilypadmc.org");
-			
+			return;
 		}
 		
 		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
