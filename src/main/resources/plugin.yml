@@ -6,5 +6,5 @@ author: LilyPad
 website: http://www.lilypadmc.org/
 
 load: STARTUP
-loadbefore: [ProtocolLib]
+softdepend: [ProtocolLib]
 main: ${main.class}

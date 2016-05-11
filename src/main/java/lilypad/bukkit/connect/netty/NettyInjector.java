@@ -1,4 +1,4 @@
-package lilypad.bukkit.connect.injector;
+package lilypad.bukkit.connect.netty;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
