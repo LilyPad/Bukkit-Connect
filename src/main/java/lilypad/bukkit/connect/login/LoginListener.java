@@ -37,13 +37,6 @@ public class LoginListener implements Listener {
 			event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "LilyPad: Internal server error");
 			return;
 		}
-		// Store uuid
-		UUID uuid = UUID.fromString(payload.getUUID().substring(0, 8) + "-" + payload.getUUID().substring(8, 12) + "-" + payload.getUUID().substring(12, 16) + "-" + payload.getUUID().substring(16, 20) + "-" + payload.getUUID().substring(20, 32));
-		try {
-			ReflectionUtils.setFinalField(AsyncPlayerPreLoginEvent.class, event, "uniqueId", uuid);
-		} catch(Exception exception) {
-			exception.printStackTrace();
-		}
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -52,37 +45,6 @@ public class LoginListener implements Listener {
 		LoginPayload payload = payloadCache.getByName(player.getName());
 		if (payload == null) {
 			event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "LilyPad: Internal server error");
-			return;
-		}
-		// Store uuid
-		UUID uuid = UUID.fromString(payload.getUUID().substring(0, 8) + "-" + payload.getUUID().substring(8, 12) + "-" + payload.getUUID().substring(12, 16) + "-" + payload.getUUID().substring(16, 20) + "-" + payload.getUUID().substring(20, 32));
-		try {
-			// Entity
-			Method getHandleMethod = player.getClass().getMethod("getHandle");
-			Object entityPlayer = getHandleMethod.invoke(player);
-			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, ConnectPlugin.getProtocol().getLoginListenerGameProfile());
-			ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", uuid);
-			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", uuid);
-			// User cache
-			Object craftServer = this.connectPlugin.getServer();
-			Object minecraftServer = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "console");
-			Method getUserCacheMethod = minecraftServer.getClass().getMethod("getUserCache");
-			Object userCache = getUserCacheMethod.invoke(minecraftServer);
-			Method cacheProfileMethod = userCache.getClass().getMethod(ConnectPlugin.getProtocol().getLoginListenerCacheProfile(), gameProfile.getClass());
-			cacheProfileMethod.invoke(userCache, gameProfile);
-			// Properties
-			Method getPropertiesMethod = gameProfile.getClass().getMethod("getProperties");
-			Object gameProfileProperties = getPropertiesMethod.invoke(gameProfile);
-			Method gameProfilePropertiesClear = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("clear");
-			Method gameProfilePropertiesPut = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("put", Object.class, Object.class);
-			gameProfilePropertiesClear.invoke(gameProfileProperties);
-			Constructor<?> propertyConstructor = Class.forName(ConnectPlugin.getProtocol().getLoginListenerPropertyConstructor()).getConstructor(String.class, String.class, String.class);
-			for(int i = 0; i < payload.getProperties().length; i++) {
-				String name = payload.getProperties()[i].getName();
-				gameProfilePropertiesPut.invoke(gameProfileProperties, name, propertyConstructor.newInstance(name, payload.getProperties()[i].getValue(), payload.getProperties()[i].getSignature()));
-			}
-		} catch(Exception exception) {
-			exception.printStackTrace();
 			return;
 		}
 		// Emulate a normal login procedure

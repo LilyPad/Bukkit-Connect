@@ -12,6 +12,7 @@ import javassist.NotFoundException;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
 import lilypad.bukkit.connect.ConnectPlugin;
+import lilypad.bukkit.connect.util.JavassistUtil;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 
 import org.bukkit.Server;
@@ -39,7 +40,7 @@ public class PacketInjector {
 		}
 		Class<?> packetClass = (Class<?>) serverBound.get(packetId);
 		// create packet proxy
-		ClassPool classPool = ClassPool.getDefault();
+		ClassPool classPool = JavassistUtil.getClassPool();
 		CtClass packetCtClass = classPool.getCtClass(packetClass.getName());
 		final CtClass packetCtClassProxy = classPool.getAndRename(packetClass.getName(), packetClass.getName() + "$stringMaxSize" + maxSize);
 		packetCtClassProxy.setSuperclass(packetCtClass);
@@ -52,8 +53,8 @@ public class PacketInjector {
 		CtMethod decodeCtMethod = packetCtClassProxy.getDeclaredMethod(ConnectPlugin.getProtocol().getPacketInjectorDecodeCtMethod(), new CtClass[] { classPool.getCtClass(minecraftPackage + ".PacketDataSerializer") });
 		decodeCtMethod.instrument(new ExprEditor() {
 			public void edit(MethodCall methodCall) throws CannotCompileException {
-				if(!methodCall.getClassName().equals(minecraftPackage + ".PacketDataSerializer") 
-						|| !methodCall.getMethodName().equals("c") 
+				if(!methodCall.getClassName().equals(minecraftPackage + ".PacketDataSerializer")
+						|| !methodCall.getMethodName().equals("c")
 						|| !methodCall.getSignature().equals("(I)Ljava/lang/String;")) {
 					return;
 				}
@@ -74,5 +75,5 @@ public class PacketInjector {
 		// replace packet
 		serverBound.put(packetId, packetClassProxy);
 	}
-	
+
 }
