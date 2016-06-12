@@ -162,7 +162,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 
                     profile = new GameProfile(uuid, name);
                     for (LoginPayload.Property payloadProperty : payload.getProperties()) {
-                        Property property = new Property(payloadProperty.getName(), payloadProperty.getValue(), payload.getSecurityKey());
+                        Property property = new Property(payloadProperty.getName(), payloadProperty.getValue(), payloadProperty.getSignature());
                         profile.getProperties().put(payloadProperty.getName(), property);
                     }
 
