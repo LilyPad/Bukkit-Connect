@@ -1,5 +1,6 @@
 package lilypad.bukkit.connect.injector;
 
+import lilypad.bukkit.connect.util.JavassistUtil;
 import sun.reflect.ReflectionFactory;
 
 import java.lang.reflect.Constructor;
@@ -20,11 +21,13 @@ import org.bukkit.Server;
 @SuppressWarnings("restriction")
 public class OfflineInjector {
 
+	private static Object offlineMinecraftServer;
+
 	public static void inject(Server server) throws Exception {
 		Method serverGetHandle = server.getClass().getDeclaredMethod("getServer");
 		Object minecraftServer = serverGetHandle.invoke(server);
 		// create offline minecraftServer
-		ClassPool classPool = ClassPool.getDefault();
+		ClassPool classPool = JavassistUtil.getClassPool();
 		CtClass minecraftServerClass = classPool.getCtClass(minecraftServer.getClass().getName());
 		CtClass offlineMinecraftServerClass = classPool.makeClass(minecraftServer.getClass().getName() + "$offline");
 		offlineMinecraftServerClass.setSuperclass(minecraftServerClass);
@@ -77,7 +80,7 @@ public class OfflineInjector {
 		ReflectionFactory reflectionFactory = ReflectionFactory.getReflectionFactory();
 		Constructor<?> objectConstructor = Object.class.getDeclaredConstructor();
 		Constructor<?> serializeConstructor = reflectionFactory.newConstructorForSerialization(offlineMinecraftServerJClass, objectConstructor);
-		Object offlineMinecraftServer = serializeConstructor.newInstance();
+		offlineMinecraftServer = serializeConstructor.newInstance();
 		// ... set our delegate, among other stuff
 		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass(), offlineMinecraftServer, "delegate", minecraftServer);
 		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass().getSuperclass().getSuperclass(), offlineMinecraftServer, "server", server);
@@ -95,5 +98,8 @@ public class OfflineInjector {
 		// set server connection minecraftServer
 		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, ConnectPlugin.getProtocol().getOfflineInjectorServerConnection(), offlineMinecraftServer);
 	}
-	
+
+	public static Object getOfflineMinecraftServer() {
+		return offlineMinecraftServer;
+	}
 }
