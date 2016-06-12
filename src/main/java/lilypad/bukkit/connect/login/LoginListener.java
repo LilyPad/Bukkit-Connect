@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import lilypad.bukkit.connect.ConnectPlugin;
@@ -59,7 +60,7 @@ public class LoginListener implements Listener {
 			// Entity
 			Method getHandleMethod = player.getClass().getMethod("getHandle");
 			Object entityPlayer = getHandleMethod.invoke(player);
-			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, "bS");
+			Object gameProfile = ReflectionUtils.getPrivateField(entityPlayer.getClass().getSuperclass(), entityPlayer, Object.class, ConnectPlugin.getProtocol().getLoginListenerGameProfile());
 			ReflectionUtils.setFinalField(gameProfile.getClass(), gameProfile, "id", uuid);
 			ReflectionUtils.setFinalField(entityPlayer.getClass().getSuperclass().getSuperclass().getSuperclass(), entityPlayer, "uniqueID", uuid);
 			// User cache
@@ -67,7 +68,7 @@ public class LoginListener implements Listener {
 			Object minecraftServer = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, Object.class, "console");
 			Method getUserCacheMethod = minecraftServer.getClass().getMethod("getUserCache");
 			Object userCache = getUserCacheMethod.invoke(minecraftServer);
-			Method cacheProfileMethod = userCache.getClass().getMethod("a", gameProfile.getClass());
+			Method cacheProfileMethod = userCache.getClass().getMethod(ConnectPlugin.getProtocol().getLoginListenerCacheProfile(), gameProfile.getClass());
 			cacheProfileMethod.invoke(userCache, gameProfile);
 			// Properties
 			Method getPropertiesMethod = gameProfile.getClass().getMethod("getProperties");
@@ -75,7 +76,7 @@ public class LoginListener implements Listener {
 			Method gameProfilePropertiesClear = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("clear");
 			Method gameProfilePropertiesPut = gameProfileProperties.getClass().getSuperclass().getDeclaredMethod("put", Object.class, Object.class);
 			gameProfilePropertiesClear.invoke(gameProfileProperties);
-			Constructor<?> propertyConstructor = Class.forName("com.mojang.authlib.properties.Property").getConstructor(String.class, String.class, String.class);
+			Constructor<?> propertyConstructor = Class.forName(ConnectPlugin.getProtocol().getLoginListenerPropertyConstructor()).getConstructor(String.class, String.class, String.class);
 			for(int i = 0; i < payload.getProperties().length; i++) {
 				String name = payload.getProperties()[i].getName();
 				gameProfilePropertiesPut.invoke(gameProfileProperties, name, propertyConstructor.newInstance(name, payload.getProperties()[i].getValue(), payload.getProperties()[i].getSignature()));
@@ -123,11 +124,23 @@ public class LoginListener implements Listener {
 			} else {
 				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage.toString());
 			}
-		} else if (this.connectPlugin.getServer().getOnlinePlayers().size() >= this.connectPlugin.getServer().getMaxPlayers()) {
+		} else if (sizeOf(this.connectPlugin.getServer().getOnlinePlayers()) >= this.connectPlugin.getServer().getMaxPlayers()) {
 			event.disallow(PlayerLoginEvent.Result.KICK_FULL, this.connectPlugin.getSpigotHook().isSpigot() ? this.connectPlugin.getSpigotHook().getServerFullMessage() : "The server is full!");
 		} else if (event.getResult() != PlayerLoginEvent.Result.KICK_OTHER) {
 			event.allow();
 		}
+	}
+	
+	public int sizeOf(Object list) {
+		if (list instanceof List) {
+			return ((List<?>) list).size();
+		}
+		
+		if (list instanceof Player[]) {
+			return ((Player[]) list).length;
+		}
+		
+		return 0;
 	}
 
 }

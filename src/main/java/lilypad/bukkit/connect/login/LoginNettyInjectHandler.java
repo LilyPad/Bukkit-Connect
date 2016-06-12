@@ -103,7 +103,16 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 			ReflectionUtils.setFinalField(AbstractChannel.class, context.channel(), "remoteAddress", newRemoteAddress);
 			// MC
 			Object networkManager = context.channel().pipeline().get("packet_handler");
-			ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "l", newRemoteAddress);
+			if (ConnectPlugin.getProtocol().getGeneralVersion().equalsIgnoreCase("1.7")) {
+				String[] fields = ConnectPlugin.getProtocol().getLoginNettyInjectHandlerNetworkManager().split(",");
+				try {
+					ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, fields[0], newRemoteAddress);
+				} catch (Exception e) {
+					ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, fields[1], newRemoteAddress);
+				}
+			} else {
+				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, ConnectPlugin.getProtocol().getLoginNettyInjectHandlerNetworkManager(), newRemoteAddress);
+			}
 		} catch(Exception exception) {
 			exception.printStackTrace();
 		}
