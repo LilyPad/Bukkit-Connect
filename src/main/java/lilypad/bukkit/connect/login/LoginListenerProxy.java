@@ -105,6 +105,10 @@ public class LoginListenerProxy {
         return packetListenerField;
     }
 
+    public static Class getLoginListenerClass() {
+        return loginListenerClass;
+    }
+
     public static Field getProfileField() {
         return profileField;
     }

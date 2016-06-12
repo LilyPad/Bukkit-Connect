@@ -167,6 +167,9 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
                     }
 
                     profileField.set(loginListenerProxy, profile);
+
+                    Field hostnameField = LoginListenerProxy.getLoginListenerClass().getField("hostname");
+                    hostnameField.set(loginListenerProxy, payload.getHost());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
