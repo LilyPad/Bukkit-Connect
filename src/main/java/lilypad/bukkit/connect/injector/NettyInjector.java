@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import lilypad.bukkit.connect.ConnectPlugin;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 
 import org.bukkit.Server;
@@ -31,7 +32,7 @@ public class NettyInjector {
 		}
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// Get ChannelFuture List // TODO find the field dynamically
-		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, "g");
+		List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, ConnectPlugin.getProtocol().getNettyInjectorChannelFutureList());
 		// Iterate ChannelFutures
 		int commonPort = 0;
 		for(ChannelFuture channelFuture : channelFutureList) {

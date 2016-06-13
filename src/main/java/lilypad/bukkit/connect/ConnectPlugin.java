@@ -1,13 +1,6 @@
 package lilypad.bukkit.connect;
 
-import java.net.InetSocketAddress;
-
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.plugin.ServicePriority;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import lilypad.bukkit.connect.hooks.SpigotHook;
 import lilypad.bukkit.connect.injector.HandlerListInjector;
 import lilypad.bukkit.connect.injector.NettyInjector;
 import lilypad.bukkit.connect.injector.OfflineInjector;
@@ -15,10 +8,22 @@ import lilypad.bukkit.connect.injector.PacketInjector;
 import lilypad.bukkit.connect.login.LoginListener;
 import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
 import lilypad.bukkit.connect.login.LoginPayloadCache;
+import lilypad.bukkit.connect.protocol.IProtocol;
+import lilypad.bukkit.connect.protocol.Protocol1_10_R1;
+import lilypad.bukkit.connect.protocol.Protocol1_8_R1;
+import lilypad.bukkit.connect.protocol.Protocol1_8_R2;
+import lilypad.bukkit.connect.protocol.Protocol1_9_R1;
+import lilypad.bukkit.connect.protocol.Protocol1_9_R2;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.lib.ConnectImpl;
-import lilypad.bukkit.connect.hooks.SpigotHook;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.plugin.ServicePriority;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.net.InetSocketAddress;
 
 public class ConnectPlugin extends JavaPlugin {
 
@@ -27,6 +32,7 @@ public class ConnectPlugin extends JavaPlugin {
 	private ConnectThread connectThread;
 	private String securityKey;
 	private int commonPort;
+	private static IProtocol protocol;
 
 	@Override
 	public void onLoad() {
@@ -37,10 +43,35 @@ public class ConnectPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
+
+		String version = super.getServer().getClass().getPackage().getName().replace(".",  ",").split(",")[3];
+
+		switch (version) {
+		case "v1_8_R1":
+			protocol = new Protocol1_8_R1();
+			break;
+		case "v1_8_R2":
+		case "v1_8_R3":
+			protocol = new Protocol1_8_R2();
+			break;
+		case "v1_9_R1":
+			protocol = new Protocol1_9_R1();
+			break;
+        case "v1_9_R2":
+            protocol = new Protocol1_9_R2();
+            break;
+        case "v1_10_R1":
+            protocol = new Protocol1_10_R1();
+            break;
+		default:
+			System.out.println("[Connect] Unable to start plugin - unsupported version. Please retrieve the newest version at http://lilypadmc.org");
+			return;
+		}
+
 		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
 		this.connectThread = new ConnectThread(this);
 		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
-		
+
 		LoginPayloadCache payloadCache = new LoginPayloadCache();
 		try {
 			// Modify handshake packet max string size
@@ -62,7 +93,7 @@ public class ConnectPlugin extends JavaPlugin {
 			System.out.println("[Connect] Unable to start plugin - unsupported version?");
 			return;
 		}
-		
+
 		super.getServer().getScheduler().runTask(this, new Runnable() {
 			public void run() {
 				try {
@@ -94,6 +125,7 @@ public class ConnectPlugin extends JavaPlugin {
 		} finally {
 			this.connect = null;
 			this.connectThread = null;
+			protocol = null;
 		}
 	}
 
@@ -123,6 +155,10 @@ public class ConnectPlugin extends JavaPlugin {
 
 	public SpigotHook getSpigotHook() {
 		return this.spigotHook;
+	}
+
+	public static IProtocol getProtocol() {
+		return protocol;
 	}
 
 }
