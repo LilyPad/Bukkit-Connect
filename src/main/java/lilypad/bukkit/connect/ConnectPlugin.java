@@ -14,6 +14,7 @@ import lilypad.bukkit.connect.protocol.Protocol1_8_R1;
 import lilypad.bukkit.connect.protocol.Protocol1_8_R2;
 import lilypad.bukkit.connect.protocol.Protocol1_9_R1;
 import lilypad.bukkit.connect.protocol.Protocol1_9_R2;
+import lilypad.bukkit.connect.protocol.Protocol1_7_R4;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.lib.ConnectImpl;
@@ -47,6 +48,9 @@ public class ConnectPlugin extends JavaPlugin {
 		String version = super.getServer().getClass().getPackage().getName().replace(".",  ",").split(",")[3];
 
 		switch (version) {
+		case "v1_7_R4":
+			protocol = new Protocol1_7_R4();
+			break;
 		case "v1_8_R1":
 			protocol = new Protocol1_8_R1();
 			break;
@@ -57,12 +61,12 @@ public class ConnectPlugin extends JavaPlugin {
 		case "v1_9_R1":
 			protocol = new Protocol1_9_R1();
 			break;
-        case "v1_9_R2":
-            protocol = new Protocol1_9_R2();
-            break;
-        case "v1_10_R1":
-            protocol = new Protocol1_10_R1();
-            break;
+        	case "v1_9_R2":
+            		protocol = new Protocol1_9_R2();
+            		break;
+        	case "v1_10_R1":
+            		protocol = new Protocol1_10_R1();
+            		break;
 		default:
 			System.out.println("[Connect] Unable to start plugin - unsupported version. Please retrieve the newest version at http://lilypadmc.org");
 			return;
