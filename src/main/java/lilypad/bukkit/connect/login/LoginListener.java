@@ -97,11 +97,9 @@ public class LoginListener implements Listener {
 		if (list instanceof List) {
 			return ((List<?>) list).size();
 		}
-		
 		if (list instanceof Player[]) {
 			return ((Player[]) list).length;
 		}
-		
 		return 0;
 	}
 

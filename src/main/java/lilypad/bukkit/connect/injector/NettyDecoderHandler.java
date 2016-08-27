@@ -2,47 +2,35 @@ package lilypad.bukkit.connect.injector;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.MessageToMessageDecoder;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 
-public class NettyDecoderHandler extends ByteToMessageDecoder {
+public class NettyDecoderHandler extends MessageToMessageDecoder<Object> {
 
 	private NettyInjectHandler handler;
-	private ByteToMessageDecoder oldDecoder;
-	private Method oldDecoderMethod;
 	private boolean enabled = true;
 	
-	public NettyDecoderHandler(NettyInjectHandler handler, ByteToMessageDecoder oldDecoder) throws Exception {
+	public NettyDecoderHandler(NettyInjectHandler handler) throws Exception {
 		this.handler = handler;
-		this.oldDecoder = oldDecoder;
-		this.oldDecoderMethod = this.oldDecoder.getClass().getDeclaredMethod("decode", ChannelHandlerContext.class, ByteBuf.class, List.class);
-		this.oldDecoderMethod.setAccessible(true);
 	}
 
 	@Override
-	protected void decode(ChannelHandlerContext context, ByteBuf buf, List<Object> out) throws Exception {
-		if(this.enabled && this.handler.isEnabled()) {
-			// Call Old Decode
-			this.oldDecoderMethod.invoke(this.oldDecoder, context, buf, out);
-			if(out.isEmpty()) {
-				return;
-			}
-			// Iterate Out
-			Iterator<Object> iterator = out.iterator();
-			do {
-				this.handler.packetReceived(this, context, iterator.next());
-			} while(this.enabled && iterator.hasNext());
-		} else {
-			// Call Old Decode
-			this.oldDecoderMethod.invoke(this.oldDecoder, context, buf, out);
+	protected void decode(ChannelHandlerContext context, Object packet, List<Object> out) throws Exception {
+		if (this.enabled && this.handler.isEnabled()) {
+			this.handler.packetReceived(this, context, packet);
+		}
+		out.add(packet);
+		if (!this.enabled) {
+			context.pipeline().remove("lilypad_decoder");
 		}
 	}
 	
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
+	public void disable() {
+		this.enabled = false;
 	}
 
 }

@@ -1,6 +1,7 @@
 package lilypad.bukkit.connect.login;
 
 import com.google.gson.Gson;
+import java.util.UUID;
 
 public class LoginPayload {
 
@@ -86,8 +87,8 @@ public class LoginPayload {
 		return this.n;
 	}
 	
-	public String getUUID() {
-		return this.u;
+	public UUID getUUID() {
+		return UUID.fromString(this.u.substring(0, 8) + "-" + this.u.substring(8, 12) + "-" + this.u.substring(12, 16) + "-" + this.u.substring(16, 20) + "-" + this.u.substring(20, 32));
 	}
 	
 	public Property[] getProperties() {

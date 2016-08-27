@@ -40,8 +40,8 @@ public class OfflineInjector {
 		offlineMinecraftServerClass.addMethod(getOnlineModeMethod);
 		// ... proxy all declared methods recursively
 		CtClass cursorClass = minecraftServerClass;
-		while(true) {
-			for(CtMethod method : cursorClass.getDeclaredMethods()) {
+		while (true) {
+			for (CtMethod method : cursorClass.getDeclaredMethods()) {
 				if(Modifier.isFinal(method.getModifiers())) {
 					continue;
 				}
@@ -59,10 +59,10 @@ public class OfflineInjector {
 				offlineMinecraftServerClass.addMethod(proxyMethod);
 			}
 			cursorClass = cursorClass.getSuperclass();
-			if(cursorClass == null) {
+			if (cursorClass == null) {
 				break;
 			}
-			if(cursorClass.getName().equals("java.lang.Object")) {
+			if (cursorClass.getName().equals("java.lang.Object")) {
 				break;
 			}
 		}
@@ -87,8 +87,8 @@ public class OfflineInjector {
 		ReflectionUtils.setFinalField(offlineMinecraftServer.getClass().getSuperclass().getSuperclass(), offlineMinecraftServer, "processQueue", ReflectionUtils.getPrivateField(minecraftServer.getClass().getSuperclass(), minecraftServer, Object.class, "processQueue"));
 		// get server connection
 		Method serverConnectionMethod = null;
-		for(Method method : minecraftServer.getClass().getSuperclass().getDeclaredMethods()) {
-			if(!method.getReturnType().getSimpleName().equals("ServerConnection")) {
+		for (Method method : minecraftServer.getClass().getSuperclass().getDeclaredMethods()) {
+			if (!method.getReturnType().getSimpleName().equals("ServerConnection")) {
 				continue;
 			}
 			serverConnectionMethod = method;
@@ -97,9 +97,15 @@ public class OfflineInjector {
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// set server connection minecraftServer
 		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, ConnectPlugin.getProtocol().getOfflineInjectorServerConnection(), offlineMinecraftServer);
+		// set protocolsupport minecraftserver
+		if (server.getPluginManager().getPlugin("ProtocolSupport") != null) {
+			Class<?> supportLoginListener = Class.forName("protocolsupport.protocol.packet.handler.AbstractLoginListener");
+			ReflectionUtils.setFinalField(supportLoginListener, null, "server", offlineMinecraftServer);
+		}
 	}
 
 	public static Object getOfflineMinecraftServer() {
 		return offlineMinecraftServer;
 	}
+	
 }

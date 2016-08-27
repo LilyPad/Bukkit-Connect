@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 
 public class ConnectPlugin extends JavaPlugin {
 
+	private LoginPayloadCache payloadCache = new LoginPayloadCache();
 	private SpigotHook spigotHook = new SpigotHook();
 	private Connect connect;
 	private ConnectThread connectThread;
@@ -43,9 +44,7 @@ public class ConnectPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-
 		String version = super.getServer().getClass().getPackage().getName().replace(".",  ",").split(",")[3];
-
 		switch (version) {
 		case "v1_8_R1":
 			protocol = new Protocol1_8_R1();
@@ -57,31 +56,26 @@ public class ConnectPlugin extends JavaPlugin {
 		case "v1_9_R1":
 			protocol = new Protocol1_9_R1();
 			break;
-        case "v1_9_R2":
-            protocol = new Protocol1_9_R2();
-            break;
-        case "v1_10_R1":
-            protocol = new Protocol1_10_R1();
-            break;
+		case "v1_9_R2":
+			protocol = new Protocol1_9_R2();
+			break;
+		case "v1_10_R1":
+			protocol = new Protocol1_10_R1();
+			break;
 		default:
-			System.out.println("[Connect] Unable to start plugin - unsupported version. Please retrieve the newest version at http://lilypadmc.org");
+			System.out.println("[Connect] Unable to start plugin - unsupported version (" + version + "). Please retrieve the newest version at http://lilypadmc.org");
 			return;
 		}
 
-		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
-		this.connectThread = new ConnectThread(this);
-		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
-
-		LoginPayloadCache payloadCache = new LoginPayloadCache();
 		try {
 			// Modify handshake packet max string size
-			PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
+			if (!protocol.getGeneralVersion().equals("1.10")) {
+				PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
+			}
 			// Handle LilyPad handshake packet
 			commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
 			// If we are in online-mode
 			if (super.getServer().getOnlineMode()) {
-				// Login listener will restore UUIDs
-				super.getServer().getPluginManager().registerEvents(new LoginListener(this, payloadCache), this);
 				// Prioritize our events
 				HandlerListInjector.prioritize(this, AsyncPlayerPreLoginEvent.class);
 				HandlerListInjector.prioritize(this, PlayerLoginEvent.class);
@@ -94,6 +88,11 @@ public class ConnectPlugin extends JavaPlugin {
 			return;
 		}
 
+		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
+		this.connectThread = new ConnectThread(this);
+		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
+
+		super.getServer().getPluginManager().registerEvents(new LoginListener(this, payloadCache), this);
 		super.getServer().getScheduler().runTask(this, new Runnable() {
 			public void run() {
 				try {
