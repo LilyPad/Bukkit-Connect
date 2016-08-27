@@ -97,11 +97,6 @@ public class OfflineInjector {
 		Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
 		// set server connection minecraftServer
 		ReflectionUtils.setFinalField(serverConnection.getClass(), serverConnection, ConnectPlugin.getProtocol().getOfflineInjectorServerConnection(), offlineMinecraftServer);
-		// set protocolsupport minecraftserver
-		if (server.getPluginManager().getPlugin("ProtocolSupport") != null) {
-			Class<?> supportLoginListener = Class.forName("protocolsupport.protocol.packet.handler.AbstractLoginListener");
-			ReflectionUtils.setFinalField(supportLoginListener, null, "server", offlineMinecraftServer);
-		}
 	}
 
 	public static Object getOfflineMinecraftServer() {

@@ -69,9 +69,10 @@ public class ConnectPlugin extends JavaPlugin {
 
 		try {
 			// Modify handshake packet max string size
-			if (!protocol.getGeneralVersion().equals("1.10")) {
+			// -- as of 1.8 I do not believe this is necessary anymore
+			/*if (!protocol.getGeneralVersion().equals("1.10")) {
 				PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
-			}
+			}*/
 			// Handle LilyPad handshake packet
 			commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
 			// If we are in online-mode
