@@ -39,7 +39,7 @@ public class LoginListener implements Listener {
 		}
 	}
 	
-	@EventHandler(priority = EventPriority.LOWEST)
+	/*@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerLogin(PlayerLoginEvent event) {
 		Player player = event.getPlayer();
 		LoginPayload payload = payloadCache.getByName(player.getName());
@@ -91,7 +91,7 @@ public class LoginListener implements Listener {
 		} else if (event.getResult() != PlayerLoginEvent.Result.KICK_OTHER) {
 			event.allow();
 		}
-	}
+	}*/
 	
 	public int sizeOf(Object list) {
 		if (list instanceof List) {
