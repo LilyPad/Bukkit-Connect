@@ -10,14 +10,17 @@ public class JavassistUtil {
 
 	public static ClassPool getClassPool() {
 		ClassPool classPool = ClassPool.getDefault();
-		URLClassLoader classLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
-		for (URL url : classLoader.getURLs()) {
-			try {
-				// assume files
-				String path = Paths.get(url.toURI()).toString();
-				classPool.appendClassPath(path);
-			} catch (Exception exception) {
-				exception.printStackTrace();
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader instanceof URLClassLoader) {
+			URLClassLoader urlClassLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+			for (URL url : urlClassLoader.getURLs()) {
+				try {
+					// assume files
+					String path = Paths.get(url.toURI()).toString();
+					classPool.appendClassPath(path);
+				} catch (Exception exception) {
+					exception.printStackTrace();
+				}
 			}
 		}
 		return classPool;
