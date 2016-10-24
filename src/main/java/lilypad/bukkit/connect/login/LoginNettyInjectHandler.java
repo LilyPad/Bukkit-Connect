@@ -12,10 +12,13 @@ import lilypad.bukkit.connect.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.util.UUID;
+import java.net.SocketAddress;
 
 public class LoginNettyInjectHandler implements NettyInjectHandler {
+	private Method setProtocolSupportVersion = null;
+	private Method getProtocolSupportVersion = null;
 
 	private String requestedStateFieldCache;
 	private String serverHostFieldCache;
@@ -27,6 +30,16 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 	public LoginNettyInjectHandler(ConnectPlugin connectPlugin, LoginPayloadCache payloadCache) {
 		this.connectPlugin = connectPlugin;
 		this.payloadCache = payloadCache;
+		try {
+			Class<?> storage = Class.forName("protocolsupport.protocol.storage.ProtocolStorage");
+			Class<?> protocolVersion = Class.forName("protocolsupport.api.ProtocolVersion");
+			setProtocolSupportVersion = storage.getMethod("setProtocolVersion", SocketAddress.class, protocolVersion);
+			getProtocolSupportVersion = storage.getMethod("getProtocolVersion", SocketAddress.class);
+		} catch (ClassNotFoundException e) {
+			// No ProtocolSupport
+		} catch (NoSuchMethodException e){
+			e.printStackTrace();
+		}
 	}
 
 	public void packetReceived(NettyDecoderHandler handler, ChannelHandlerContext context, Object object) throws Exception {
@@ -119,6 +132,8 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 
 		// Store the real ip & port
 		try {
+			SocketAddress old = context.channel().remoteAddress();
+
 			InetSocketAddress newRemoteAddress = new InetSocketAddress(payload.getRealIp(), payload.getRealPort());
 			// Netty
 			ReflectionUtils.setFinalField(AbstractChannel.class, context.channel(), "remoteAddress", newRemoteAddress);
@@ -136,6 +151,11 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, ConnectPlugin.getProtocol().getLoginNettyInjectHandlerNetworkManager(), newRemoteAddress);
 			}
 
+			// ProtocolSupport Fix
+			if (getProtocolSupportVersion != null && setProtocolSupportVersion != null) {
+				Object version = getProtocolSupportVersion.invoke(null, old);
+				setProtocolSupportVersion.invoke(null, newRemoteAddress, version);
+			}
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
