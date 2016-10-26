@@ -12,7 +12,7 @@ public class JavassistUtil {
 		ClassPool classPool = ClassPool.getDefault();
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader instanceof URLClassLoader) {
-			URLClassLoader urlClassLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+			URLClassLoader urlClassLoader = (URLClassLoader) classLoader;
 			for (URL url : urlClassLoader.getURLs()) {
 				try {
 					// assume files
