@@ -6,6 +6,7 @@ public interface IProtocol {
 	
 	String getNettyInjectorChannelFutureList();
 	String getOfflineInjectorServerConnection();
+	boolean isOfflineBlankConstructor();
 	String getPacketInjectorProtocolDirections();
 	String getPacketInjectorDecodeCtMethod();
 	String getPacketInjectorHandleCtMethod();

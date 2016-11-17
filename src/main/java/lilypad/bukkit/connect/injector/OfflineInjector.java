@@ -68,7 +68,7 @@ public class OfflineInjector {
 		}
 		// ... make a blank constructor
 		// don't need to make a blank constructor for 1.9
-		if (!ConnectPlugin.getProtocol().getGeneralVersion().equalsIgnoreCase("1.9") && !ConnectPlugin.getProtocol().getGeneralVersion().equalsIgnoreCase("1.10")) {
+		if (ConnectPlugin.getProtocol().isOfflineBlankConstructor()) {
 			CtConstructor constructor = new CtConstructor(new CtClass[] { }, offlineMinecraftServerClass);
 			constructor.setBody("{ super(null); }");
 			offlineMinecraftServerClass.addConstructor(constructor);

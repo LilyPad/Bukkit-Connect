@@ -18,6 +18,11 @@ public class Protocol1_8_R1 implements IProtocol {
 	}
 
 	@Override
+	public boolean isOfflineBlankConstructor() {
+		return true;
+	}
+
+	@Override
 	public String getPacketInjectorProtocolDirections() {
 		return "h";
 	}
