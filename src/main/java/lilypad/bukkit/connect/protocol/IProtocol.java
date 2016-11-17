@@ -9,9 +9,6 @@ public interface IProtocol {
 	String getPacketInjectorProtocolDirections();
 	String getPacketInjectorDecodeCtMethod();
 	String getPacketInjectorHandleCtMethod();
-	String getLoginListenerGameProfile();
-	String getLoginListenerCacheProfile();
-	String getLoginListenerPropertyConstructor();
 	String getLoginNettyInjectHandlerNetworkManager();
 	
 }

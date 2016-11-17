@@ -33,21 +33,6 @@ public class Protocol1_7_R4 implements IProtocol {
 	}
 
 	@Override
-	public String getLoginListenerGameProfile() {
-		return "i";
-	}
-
-	@Override
-	public String getLoginListenerCacheProfile() {
-		return "a";
-	}
-
-	@Override
-	public String getLoginListenerPropertyConstructor() {
-		return "net.minecraft.util.com.mojang.authlib.properties.Property";
-	}
-
-	@Override
 	public String getLoginNettyInjectHandlerNetworkManager() {
 		return "n,l";
 	}

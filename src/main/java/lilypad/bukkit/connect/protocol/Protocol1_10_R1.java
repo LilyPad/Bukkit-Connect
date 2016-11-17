@@ -33,21 +33,6 @@ public class Protocol1_10_R1 implements IProtocol {
 	}
 
 	@Override
-	public String getLoginListenerGameProfile() {
-		return "bT";
-	}
-
-	@Override
-	public String getLoginListenerCacheProfile() {
-		return "a";
-	}
-
-	@Override
-	public String getLoginListenerPropertyConstructor() {
-		return "com.mojang.authlib.properties.Property";
-	}
-
-	@Override
 	public String getLoginNettyInjectHandlerNetworkManager() {
 		return "l";
 	}
