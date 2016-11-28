@@ -39,7 +39,7 @@ public class NettyInjector {
 			// Get ChannelPipeline
 			ChannelPipeline channelPipeline = channelFuture.channel().pipeline();
 			// Get ServerBootstrapAcceptor
-			ChannelHandler serverBootstrapAcceptor = channelPipeline.first();
+			ChannelHandler serverBootstrapAcceptor = channelPipeline.last();
 			// Get Old ChildHandler
 			ChannelInitializer<SocketChannel> oldChildHandler = ReflectionUtils.getPrivateField(serverBootstrapAcceptor.getClass(), serverBootstrapAcceptor, ChannelInitializer.class, "childHandler");
 			// Set New ChildHandler
