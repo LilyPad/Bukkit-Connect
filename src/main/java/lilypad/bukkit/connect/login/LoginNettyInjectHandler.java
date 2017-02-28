@@ -188,7 +188,11 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 				}
 				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "spoofedUUID", payload.getUUID());
 				ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "spoofedProfile", properties);
-				ReflectionUtils.setFinalField(packetListener.getClass().getSuperclass(), packetListener, "isOnlineMode", false);
+				try {
+					ReflectionUtils.setFinalField(packetListener.getClass().getSuperclass().getSuperclass(), packetListener, "isOnlineMode", false);
+				} catch(NoSuchFieldException exception1) {
+					ReflectionUtils.setFinalField(packetListener.getClass().getSuperclass(), packetListener, "isOnlineMode", false);
+				}
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace();
