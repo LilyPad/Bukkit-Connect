@@ -176,6 +176,10 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 				if (this.connectPlugin.getServer().getPluginManager().getPlugin("ProtocolSupport") == null) {
 					throw exception;
 				}
+				if (LoginListenerProxy.getPacketListenerField() == null) {
+					context.close();
+					return;
+				}
 				Object packetListener = LoginListenerProxy.getPacketListenerField().get(networkManager);
 				GameProfile profile = ReflectionUtils.getPrivateField(object.getClass(), object, GameProfile.class, "a");
 				LoginPayload payload = payloadCache.getByName(profile.getName());
@@ -196,6 +200,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace();
+			context.close();
 		}
 	}
 
