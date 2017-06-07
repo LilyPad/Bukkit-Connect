@@ -198,8 +198,8 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 					ReflectionUtils.setFinalField(packetListener.getClass().getSuperclass(), packetListener, "isOnlineMode", false);
 				}
 			}
-		} catch (Exception exception) {
-			exception.printStackTrace();
+		} catch (Exception exception2) {
+			exception2.printStackTrace();
 			context.close();
 		}
 	}
