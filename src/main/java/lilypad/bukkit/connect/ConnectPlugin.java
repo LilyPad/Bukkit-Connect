@@ -129,7 +129,7 @@ public class ConnectPlugin extends JavaPlugin {
 		} finally {
 			this.connect = null;
 			this.connectThread = null;
-			protocol = null;
+			ConnectPlugin.protocol = null;
 		}
 	}
 
