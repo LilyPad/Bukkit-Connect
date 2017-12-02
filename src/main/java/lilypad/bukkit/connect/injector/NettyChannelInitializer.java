@@ -26,6 +26,7 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 		this.oldChildHandlerMethod.invoke(this.oldChildHandler, channel);
 		// Add Handlers
 		if (this.handler.isEnabled()) {
+			channel.pipeline().remove("legacy_query");
 			channel.pipeline().addAfter("decoder", "lilypad_decoder", new NettyDecoderHandler(this.handler));
 		}
 	}
