@@ -117,8 +117,10 @@ public class ConnectPlugin extends JavaPlugin {
 			if (this.connectThread != null) {
 				this.connectThread.stop();
 			}
-			if (this.connect != null) {
-				this.connect.close();
+			if (!super.getConfig().getBoolean("shutdown-lazy", false)) {
+				if (this.connect != null) {
+					this.connect.close();
+				}
 			}
 		} catch(Exception exception) {
 			exception.printStackTrace();
