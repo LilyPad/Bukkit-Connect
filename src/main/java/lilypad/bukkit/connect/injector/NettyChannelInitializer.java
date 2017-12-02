@@ -1,5 +1,7 @@
 package lilypad.bukkit.connect.injector;
 
+import org.bukkit.Bukkit;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -26,7 +28,7 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 		this.oldChildHandlerMethod.invoke(this.oldChildHandler, channel);
 		// Add Handlers
 		if (this.handler.isEnabled()) {
-			if (channel.pipeline().names().contains("legacy_query")) {
+			if (channel.pipeline().names().contains("legacy_query") && Bukkit.getServer().getPluginManager().getPlugin("ProtocolSupport") != null) {
 				channel.pipeline().remove("legacy_query");
 			}
 			channel.pipeline().addAfter("decoder", "lilypad_decoder", new NettyDecoderHandler(this.handler));
