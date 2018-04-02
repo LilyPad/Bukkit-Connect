@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.Modifier;
