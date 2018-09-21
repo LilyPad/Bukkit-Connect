@@ -1,5 +1,7 @@
 package lilypad.bukkit.connect;
 
+import lilypad.bukkit.connect.events.CloudConnectEvent;
+import lilypad.bukkit.connect.events.CloudDisconnectEvent;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.api.ConnectSettings;
 import lilypad.client.connect.api.request.RequestException;
@@ -135,11 +137,13 @@ public class ConnectThread implements Runnable {
 				// pause
 				System.out.println("[Connect] Connected to the cloud");
 				this.connectPlugin.setSecurityKey(asServerResult.getSecurityKey());
+				connectPlugin.getServer().getPluginManager().callEvent(new CloudConnectEvent());
 				while(connect.isConnected()) {
 					Thread.sleep(1000L);
 				}
 				this.connectPlugin.setSecurityKey(null);
 				System.out.println("[Connect] Lost connection to the cloud, reconnecting");
+				connectPlugin.getServer().getPluginManager().callEvent(new CloudDisconnectEvent());
 			}
 		} catch(InterruptedException exception) {
 			// ignore
