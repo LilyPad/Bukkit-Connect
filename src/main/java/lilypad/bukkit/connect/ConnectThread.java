@@ -1,9 +1,9 @@
 package lilypad.bukkit.connect;
 
-import lilypad.bukkit.connect.events.CloudConnectEvent;
-import lilypad.bukkit.connect.events.CloudDisconnectEvent;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.api.ConnectSettings;
+import lilypad.client.connect.api.event.CloudConnectEvent;
+import lilypad.client.connect.api.event.CloudDisconnectEvent;
 import lilypad.client.connect.api.request.RequestException;
 import lilypad.client.connect.api.request.impl.AsServerRequest;
 import lilypad.client.connect.api.request.impl.AuthenticateRequest;
@@ -11,6 +11,7 @@ import lilypad.client.connect.api.request.impl.GetKeyRequest;
 import lilypad.client.connect.api.result.impl.AsServerResult;
 import lilypad.client.connect.api.result.impl.AuthenticateResult;
 import lilypad.client.connect.api.result.impl.GetKeyResult;
+import lilypad.client.connect.lib.ConnectImpl;
 
 public class ConnectThread implements Runnable {
 
@@ -137,13 +138,13 @@ public class ConnectThread implements Runnable {
 				// pause
 				System.out.println("[Connect] Connected to the cloud");
 				this.connectPlugin.setSecurityKey(asServerResult.getSecurityKey());
-				connectPlugin.getServer().getPluginManager().callEvent(new CloudConnectEvent());
+				((ConnectImpl )connectPlugin.getConnect()).dispatchEvent(new CloudConnectEvent());
 				while(connect.isConnected()) {
 					Thread.sleep(1000L);
 				}
 				this.connectPlugin.setSecurityKey(null);
 				System.out.println("[Connect] Lost connection to the cloud, reconnecting");
-				connectPlugin.getServer().getPluginManager().callEvent(new CloudDisconnectEvent());
+				((ConnectImpl )connectPlugin.getConnect()).dispatchEvent(new CloudDisconnectEvent());
 			}
 		} catch(InterruptedException exception) {
 			// ignore
