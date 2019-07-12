@@ -2,6 +2,8 @@ name: LilyPad-Connect
 version: ${build.number}
 description: LilyPad
 
+api-version: 1.14
+
 author: LilyPad
 website: http://www.lilypadmc.org/
 

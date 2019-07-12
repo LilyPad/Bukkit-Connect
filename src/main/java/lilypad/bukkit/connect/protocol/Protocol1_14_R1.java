@@ -1,20 +1,20 @@
 package lilypad.bukkit.connect.protocol;
 
-public class Protocol1_11_R1 implements IProtocol {
+public class Protocol1_14_R1 implements IProtocol{
 
     @Override
     public String getGeneralVersion() {
-        return "1.11";
+        return "1.14";
     }
 
     @Override
     public String getNettyInjectorChannelFutureList() {
-        return "g";
+        return "f";
     }
 
     @Override
     public String getOfflineInjectorServerConnection() {
-        return "f";
+        return "e";
     }
 
     @Override
@@ -39,7 +39,7 @@ public class Protocol1_11_R1 implements IProtocol {
 
     @Override
     public String getLoginNettyInjectHandlerNetworkManager() {
-        return "l";
+        return "socketAddress";
     }
 
 }
