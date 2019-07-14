@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <build.number>Unknown</build.number>
+        <build.number>2.0</build.number>
         <main.class>lilypad.bukkit.connect.ConnectPlugin</main.class>
     </properties>
 
@@ -32,9 +32,19 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>dmulloy2-repo</id>
+            <url>http://repo.dmulloy2.net/nexus/repository/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>4.4.0</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>lilypad.client.connect</groupId>
             <artifactId>lib</artifactId>
