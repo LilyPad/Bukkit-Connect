@@ -13,10 +13,11 @@ import java.util.List;
 
 public class HandlerListInjector extends HandlerList {
 
-    private Plugin plugin;
-    private List<RegisteredListener> startListeners = new ArrayList<RegisteredListener>();
-    private List<RegisteredListener> middleListeners = new ArrayList<RegisteredListener>();
-    private List<RegisteredListener> endListeners = new ArrayList<RegisteredListener>();
+    private final Plugin plugin;
+    private final List<RegisteredListener> startListeners = new ArrayList<>();
+    private final List<RegisteredListener> middleListeners = new ArrayList<>();
+    private final List<RegisteredListener> endListeners = new ArrayList<>();
+
     private HandlerListInjector(Plugin plugin) {
         this.plugin = plugin;
     }
@@ -53,7 +54,7 @@ public class HandlerListInjector extends HandlerList {
             }
             this.middleListeners.add(handler);
         }
-        List<RegisteredListener> handlerList = new ArrayList<RegisteredListener>(handlers.length);
+        List<RegisteredListener> handlerList = new ArrayList<>(handlers.length);
         handlerList.addAll(this.startListeners);
         handlerList.addAll(this.middleListeners);
         handlerList.addAll(this.endListeners);

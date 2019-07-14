@@ -20,10 +20,10 @@ import java.util.List;
 
 public class ProtocolLibPacketAdapter extends PacketAdapter {
 
-    private ConnectPlugin connectPlugin;
-    private LoginPayloadCache payloadCache;
+    private final ConnectPlugin connectPlugin;
+    private final LoginPayloadCache payloadCache;
 
-    public ProtocolLibPacketAdapter(ConnectPlugin plugin, LoginPayloadCache payloadCache) {
+    private ProtocolLibPacketAdapter(ConnectPlugin plugin, LoginPayloadCache payloadCache) {
         super(plugin, PacketType.Handshake.Client.SET_PROTOCOL);
         this.connectPlugin = plugin;
         this.payloadCache = payloadCache;
@@ -45,7 +45,7 @@ public class ProtocolLibPacketAdapter extends PacketAdapter {
         }
         Object serverConnection = serverConnectionMethod.invoke(minecraftServer);
         // Get ChannelFuture List // TODO find the field dynamically
-        List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, ConnectPlugin.getProtocol().getNettyInjectorChannelFutureList());
+        @SuppressWarnings("unchecked") List<ChannelFuture> channelFutureList = ReflectionUtils.getPrivateField(serverConnection.getClass(), serverConnection, List.class, ConnectPlugin.getProtocol().getNettyInjectorChannelFutureList());
         // Iterate ChannelFutures
         int commonPort = 0;
         for (ChannelFuture channelFuture : channelFutureList) {

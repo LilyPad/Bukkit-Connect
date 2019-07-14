@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 public class LoginPayloadCache {
 
-    private Cache<String, LoginPayload> payloads = new Cache2kBuilder<String, LoginPayload>() {
+    private final Cache<String, LoginPayload> payloads = new Cache2kBuilder<String, LoginPayload>() {
     }.expireAfterWrite(30, TimeUnit.SECONDS).build();
 
     //private Cache<String, LoginPayload> payloads = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.SECONDS).build();

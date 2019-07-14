@@ -1,6 +1,6 @@
 package lilypad.bukkit.connect.protocol;
 
-public class Protocol1_14_R1 implements IProtocol{
+public class Protocol1_14_R1 implements IProtocol {
 
     @Override
     public String getGeneralVersion() {

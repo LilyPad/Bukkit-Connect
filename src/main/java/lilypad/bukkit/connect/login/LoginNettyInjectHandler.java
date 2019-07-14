@@ -24,8 +24,8 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
     private String serverHostFieldCache;
     private Class<?> serverHostFieldClass;
 
-    private ConnectPlugin connectPlugin;
-    private LoginPayloadCache payloadCache;
+    private final ConnectPlugin connectPlugin;
+    private final LoginPayloadCache payloadCache;
 
     public LoginNettyInjectHandler(ConnectPlugin connectPlugin, LoginPayloadCache payloadCache) {
         this.connectPlugin = connectPlugin;
@@ -42,7 +42,7 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
         }
     }
 
-    public void packetReceived(NettyDecoderHandler handler, ChannelHandlerContext context, Object object) throws Exception {
+    public void packetReceived(NettyDecoderHandler handler, ChannelHandlerContext context, Object object) {
         String packetName = object.getClass().getSimpleName();
         if (packetName.startsWith("PacketHandshakingInSetProtocol")) {
             handleSetProtocol(context, object);

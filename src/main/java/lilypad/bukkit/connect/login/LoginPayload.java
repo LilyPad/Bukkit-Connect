@@ -14,9 +14,11 @@ public class LoginPayload {
     private String n;
     private String u;
     private Property[] p;
+
     public LoginPayload() {
         // empty
     }
+
     public LoginPayload(String securityKey, String host, String realIp, int realPort, String name, String uuid, Property[] properties) {
         this.s = securityKey;
         this.h = host;
@@ -27,11 +29,11 @@ public class LoginPayload {
         this.p = properties;
     }
 
-    public static LoginPayload decode(String string) throws Exception {
+    public static LoginPayload decode(String string) {
         return gson.fromJson(string, LoginPayload.class);
     }
 
-    public static String encode(LoginPayload payload) throws Exception {
+    public static String encode(LoginPayload payload) {
         return gson.toJson(payload);
     }
 

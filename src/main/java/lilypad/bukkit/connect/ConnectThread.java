@@ -12,7 +12,7 @@ import lilypad.client.connect.api.result.impl.GetKeyResult;
 
 public class ConnectThread implements Runnable {
 
-    private ConnectPlugin connectPlugin;
+    private final ConnectPlugin connectPlugin;
     private Thread thread;
 
     public ConnectThread(ConnectPlugin connectPlugin) {

@@ -7,10 +7,10 @@ import java.net.InetSocketAddress;
 
 public class ConnectSettingsImpl implements ConnectSettings {
 
-    private String outboundIp;
-    private int outboundPort;
-    private String username;
-    private String password;
+    private final String outboundIp;
+    private final int outboundPort;
+    private final String username;
+    private final String password;
 
     public ConnectSettingsImpl(FileConfiguration fileConfiguration) {
         this.outboundIp = fileConfiguration.getString("settings.address");

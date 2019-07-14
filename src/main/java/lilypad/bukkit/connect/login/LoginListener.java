@@ -7,7 +7,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 public class LoginListener implements Listener {
 
-    private LoginPayloadCache payloadCache;
+    private final LoginPayloadCache payloadCache;
 
     public LoginListener(LoginPayloadCache payloadCache) {
         this.payloadCache = payloadCache;

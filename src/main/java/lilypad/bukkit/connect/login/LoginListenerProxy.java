@@ -15,6 +15,7 @@ public class LoginListenerProxy {
     private static Class loginListenerClass;
     private static Field profileField;
 
+    @SuppressWarnings("SameParameterValue")
     private static Field findFieldOfType(Class type, Class fieldType) {
         for (Field field : type.getDeclaredFields()) {
             if (field.getType() == fieldType) {

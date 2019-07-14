@@ -9,8 +9,8 @@ import java.lang.reflect.Method;
 
 public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    private NettyInjectHandler handler;
-    private ChannelInitializer<SocketChannel> oldChildHandler;
+    private final NettyInjectHandler handler;
+    private final ChannelInitializer<SocketChannel> oldChildHandler;
     private Method oldChildHandlerMethod;
 
     public NettyChannelInitializer(NettyInjectHandler handler, ChannelInitializer<SocketChannel> oldChildHandler) throws Exception {

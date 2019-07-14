@@ -23,8 +23,8 @@ import java.net.InetSocketAddress;
 public class ConnectPlugin extends JavaPlugin {
 
     private static IProtocol protocol;
-    private LoginPayloadCache payloadCache = new LoginPayloadCache();
-    private SpigotHook spigotHook = new SpigotHook();
+    private final LoginPayloadCache payloadCache = new LoginPayloadCache();
+    private final SpigotHook spigotHook = new SpigotHook();
     private Connect connect;
     private ConnectThread connectThread;
     private String securityKey;
@@ -119,19 +119,17 @@ public class ConnectPlugin extends JavaPlugin {
         super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
 
         super.getServer().getPluginManager().registerEvents(new LoginListener(payloadCache), this);
-        super.getServer().getScheduler().runTask(this, new Runnable() {
-            public void run() {
-                try {
-                    // Connection Throttle
-                    Object craftServer = ConnectPlugin.super.getServer();
-                    YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, YamlConfiguration.class, "configuration");
-                    configuration.set("settings.connection-throttle", 0);
-                    // Start
-                    ConnectPlugin.this.connectThread.start();
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                    getLogger().info("Unable to start plugin - unsupported version?");
-                }
+        super.getServer().getScheduler().runTask(this, () -> {
+            try {
+                // Connection Throttle
+                Object craftServer = ConnectPlugin.super.getServer();
+                YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, YamlConfiguration.class, "configuration");
+                configuration.set("settings.connection-throttle", 0);
+                // Start
+                ConnectPlugin.this.connectThread.start();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+                getLogger().info("Unable to start plugin - unsupported version?");
             }
         });
     }
