@@ -8,6 +8,7 @@ import lilypad.bukkit.connect.login.LoginListener;
 import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
 import lilypad.bukkit.connect.login.LoginPayloadCache;
 import lilypad.bukkit.connect.protocol.*;
+import lilypad.bukkit.connect.protocollib.ProtocolLibPacketAdapter;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.lib.ConnectImpl;
@@ -66,11 +67,17 @@ public class ConnectPlugin extends JavaPlugin {
             case "v1_12_R1":
                 protocol = new Protocol1_12_R1();
                 break;
+            case "v1_13_R1":
+                protocol = new Protocol1_13_R1();
+                break;
+            case "v1_13_R2":
+                protocol = new Protocol1_13_R2();
+                break;
             case "v1_14_R1":
                 protocol = new Protocol1_14_R1();
                 break;
             default:
-                System.out.println("[Connect] Unable to start plugin - unsupported version (" + version + "). Please retrieve the newest version at http://lilypadmc.org");
+                getLogger().info("[Unable to start plugin - unsupported version (" + version + "). Please retrieve the newest version at http://lilypadmc.org");
                 return;
         }
 
@@ -81,7 +88,18 @@ public class ConnectPlugin extends JavaPlugin {
 				PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
 			}*/
             // Handle LilyPad handshake packet
-            commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+            if (getConfig().getBoolean("use-protocollib-adapter", false)) {
+                if (super.getServer().getPluginManager().isPluginEnabled("ProtocolLib")) {
+                    getLogger().info("Hooking ProtocolLib...");
+                    commonPort = ProtocolLibPacketAdapter.hookAndFindPort(super.getServer(), this, payloadCache);
+                } else {
+                    getLogger().severe("Injecting netty since you have 'use-protocollib-adapter' enabled and ProtocolLib isn't present!");
+                    commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+                }
+            } else {
+                getLogger().info("Injecting Netty...");
+                commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+            }
             // If we are in online-mode
             if (super.getServer().getOnlineMode()) {
                 // Prioritize our events
@@ -92,7 +110,7 @@ public class ConnectPlugin extends JavaPlugin {
             }
         } catch (Exception exception) {
             exception.printStackTrace();
-            System.out.println("[Connect] Unable to start plugin - unsupported version?");
+            getLogger().info("Unable to start plugin - unsupported version?");
             return;
         }
 
@@ -112,7 +130,7 @@ public class ConnectPlugin extends JavaPlugin {
                     ConnectPlugin.this.connectThread.start();
                 } catch (Exception exception) {
                     exception.printStackTrace();
-                    System.out.println("[Connect] Unable to start plugin - unsupported version?");
+                    getLogger().info("Unable to start plugin - unsupported version?");
                 }
             }
         });

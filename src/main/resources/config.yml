@@ -1,3 +1,4 @@
+use-protocollib-adapter: false
 settings:
   address: 127.0.0.1
   port: 5091

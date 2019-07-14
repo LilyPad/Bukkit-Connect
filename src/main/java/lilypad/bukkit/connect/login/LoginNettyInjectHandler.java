@@ -12,9 +12,13 @@ import lilypad.bukkit.connect.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 public class LoginNettyInjectHandler implements NettyInjectHandler {
+    private Method setProtocolSupportVersion = null;
+    private Method getProtocolSupportVersion = null;
 
     private String requestedStateFieldCache;
     private String serverHostFieldCache;
@@ -26,6 +30,16 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
     public LoginNettyInjectHandler(ConnectPlugin connectPlugin, LoginPayloadCache payloadCache) {
         this.connectPlugin = connectPlugin;
         this.payloadCache = payloadCache;
+        try {
+            Class<?> storage = Class.forName("protocolsupport.protocol.storage.ProtocolStorage");
+            Class<?> connectionImpl = Class.forName(" protocolsupport.protocol.ConnectionImpl");
+            setProtocolSupportVersion = storage.getMethod("addConnection", SocketAddress.class, connectionImpl);
+            getProtocolSupportVersion = storage.getMethod("removeConnection", SocketAddress.class);
+        } catch (ClassNotFoundException e) {
+            // No ProtocolSupport
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     public void packetReceived(NettyDecoderHandler handler, ChannelHandlerContext context, Object object) throws Exception {
@@ -118,6 +132,8 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 
         // Store the real ip & port
         try {
+            SocketAddress old = context.channel().remoteAddress();
+
             InetSocketAddress newRemoteAddress = new InetSocketAddress(payload.getRealIp(), payload.getRealPort());
             // Netty
             ReflectionUtils.setFinalField(AbstractChannel.class, context.channel(), "remoteAddress", newRemoteAddress);
@@ -135,6 +151,11 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
                 ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, ConnectPlugin.getProtocol().getLoginNettyInjectHandlerNetworkManager(), newRemoteAddress);
             }
 
+            // ProtocolSupport Fix
+            if (getProtocolSupportVersion != null && setProtocolSupportVersion != null) {
+                Object version = getProtocolSupportVersion.invoke(null, old);
+                setProtocolSupportVersion.invoke(null, newRemoteAddress, version);
+            }
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -175,11 +196,6 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
                 if (this.connectPlugin.getServer().getPluginManager().getPlugin("ProtocolSupport") == null) {
                     throw exception;
                 }
-                if (LoginListenerProxy.getPacketListenerField() == null) {
-                    context.close();
-                    return;
-                }
-                Object packetListener = LoginListenerProxy.getPacketListenerField().get(networkManager);
                 GameProfile profile = ReflectionUtils.getPrivateField(object.getClass(), object, GameProfile.class, "a");
                 LoginPayload payload = payloadCache.getByName(profile.getName());
                 LoginPayload.Property[] payloadProperties = payload.getProperties();
@@ -191,20 +207,19 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
                 }
                 ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "spoofedUUID", payload.getUUID());
                 ReflectionUtils.setFinalField(networkManager.getClass(), networkManager, "spoofedProfile", properties);
-                try {
+                // Just set online mode to false in server.properties
+                /*try {
                     ReflectionUtils.setFinalField(packetListener.getClass().getSuperclass().getSuperclass(), packetListener, "isOnlineMode", false);
                 } catch (NoSuchFieldException exception1) {
                     ReflectionUtils.setFinalField(packetListener.getClass().getSuperclass(), packetListener, "isOnlineMode", false);
-                }
+                }*/
             }
-        } catch (Exception exception2) {
-            exception2.printStackTrace();
-            context.close();
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
     }
 
     public boolean isEnabled() {
         return this.connectPlugin.isEnabled();
     }
-
 }

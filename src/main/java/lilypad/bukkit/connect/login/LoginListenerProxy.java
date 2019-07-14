@@ -29,7 +29,9 @@ public class LoginListenerProxy {
         Object originalLoginListener = null;
         packetListenerField = null;
         Field[] networkManagerFields = networkManager.getClass().getDeclaredFields();
+        System.out.println("networkManager.getClass() = " + networkManager.getClass());
         for (Field field : networkManagerFields) {
+            System.out.println("field.toString() = " + field.toString());
             if (field.getType().getSimpleName().equals("PacketListener")) {
                 field.setAccessible(true);
                 packetListenerField = field;
@@ -41,6 +43,8 @@ public class LoginListenerProxy {
         if (originalLoginListener == null) {
             throw new Exception("Could not find LoginListener in NetworkManager!");
         }
+        System.out.println("originalLoginListener.getClass().toString() = " + originalLoginListener.getClass().toString());
+        System.out.println("originalLoginListener = " + originalLoginListener);
         if (!originalLoginListener.getClass().getSimpleName().equals("LoginListener")) {
             throw new Exception("Could not find LoginListener in NetworkManager, found instead " + originalLoginListener.getClass().getSimpleName() + "!");
         }
