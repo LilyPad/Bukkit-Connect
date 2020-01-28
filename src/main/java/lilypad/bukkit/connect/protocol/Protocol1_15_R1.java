@@ -8,7 +8,7 @@ public class Protocol1_15_R1 implements IProtocol {
 
     @Override
     public String getNettyInjectorChannelFutureList() {
-        return "f";
+        return "listeningChannels";
     }
 
     @Override
