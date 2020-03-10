@@ -48,10 +48,21 @@
       <version>2.2.4</version>
     </dependency>
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>28.2-jre</version>
+    </dependency>
+    <dependency>
+      <groupId>org.spigotmc</groupId>
+      <artifactId>spigot-api2</artifactId>
+      <version>1.7.10-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/1.7.10.jar</systemPath>
+    </dependency>
+    <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
       <version>1.10-R0.1-SNAPSHOT</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.mojang</groupId>

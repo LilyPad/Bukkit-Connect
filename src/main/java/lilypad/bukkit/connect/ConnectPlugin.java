@@ -2,11 +2,15 @@ package lilypad.bukkit.connect;
 
 import lilypad.bukkit.connect.hooks.SpigotHook;
 import lilypad.bukkit.connect.injector.HandlerListInjector;
-import lilypad.bukkit.connect.injector.NettyInjector;
+import lilypad.bukkit.connect.injector.injector.INettyInjector;
+import lilypad.bukkit.connect.injector.injector.NettyInjector;
 import lilypad.bukkit.connect.injector.OfflineInjector;
+import lilypad.bukkit.connect.injector.PacketInjector;
+import lilypad.bukkit.connect.injector.injector.NettyInjectorLegacy;
 import lilypad.bukkit.connect.login.LoginListener;
-import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
+import lilypad.bukkit.connect.login.inject.LoginNettyInjectHandler;
 import lilypad.bukkit.connect.login.LoginPayloadCache;
+import lilypad.bukkit.connect.login.inject.LoginNettyInjectHandlerLegacy;
 import lilypad.bukkit.connect.protocol.*;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
@@ -28,6 +32,8 @@ public class ConnectPlugin extends JavaPlugin {
 	private String securityKey;
 	private int commonPort;
 	private static IProtocol protocol;
+	private INettyInjector nettyInjector;
+	private boolean isLegacy = false;
 
 	@Override
 	public void onLoad() {
@@ -39,7 +45,12 @@ public class ConnectPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		String version = super.getServer().getClass().getPackage().getName().replace(".",  ",").split(",")[3];
+		isLegacy = version.equalsIgnoreCase("v1_7_R4");
+		nettyInjector = isLegacy ? new NettyInjectorLegacy() : new NettyInjector();
 		switch (version) {
+		case "v1_7_R4":
+			protocol = new Protocol1_7_R4();
+			break;
 		case "v1_8_R1":
 			protocol = new Protocol1_8_R1();
 			break;
@@ -76,11 +87,19 @@ public class ConnectPlugin extends JavaPlugin {
 		try {
 			// Modify handshake packet max string size
 			// -- as of 1.8 I do not believe this is necessary anymore
-			/*if (!protocol.getGeneralVersion().equals("1.10")) {
+			/*
+			if (!protocol.getGeneralVersion().equals("1.10")) {
 				PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
 			}*/
 			// Handle LilyPad handshake packet
-			commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
+
+			// Little fix for adding Legacy support :>
+
+			commonPort = nettyInjector.injectAndFindPort(super.getServer(),
+					(isLegacy ? new LoginNettyInjectHandlerLegacy(this, payloadCache)
+							:  new LoginNettyInjectHandler(this, payloadCache)));
+
+
 			// If we are in online-mode
 			if (super.getServer().getOnlineMode()) {
 				// Prioritize our events

@@ -1,13 +1,13 @@
-package lilypad.bukkit.connect.login;
+package lilypad.bukkit.connect.login.proxy;
 
-import com.mojang.authlib.GameProfile;
 import javassist.*;
 import javassist.bytecode.*;
 import lilypad.bukkit.connect.util.JavassistUtil;
+import net.minecraft.util.com.mojang.authlib.GameProfile;
 
 import java.lang.reflect.Field;
 
-public class LoginListenerProxy {
+public class LoginListenerProxyLegacy {
 
 	private static Class instance;
 	private static Field packetListenerField;

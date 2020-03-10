@@ -1,6 +1,7 @@
 package lilypad.bukkit.connect.injector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 
