@@ -68,6 +68,9 @@ public class ConnectPlugin extends JavaPlugin {
 		case "v1_15_R1":
 			protocol = new Protocol1_15_R1();
 			break;
+		case "v1_16_R1":
+			protocol = new Protocol1_16_R1();
+			break;
 		default:
 			System.out.println("[Connect] Unable to start plugin - unsupported version (" + version + "). Please retrieve the newest version at http://lilypadmc.org");
 			return;
