@@ -70,6 +70,7 @@ public class ConnectPlugin extends JavaPlugin {
 			break;
 		case "v1_16_R1":
 		case "v1_16_R2":
+		case "v1_16_R3":
 			protocol = new Protocol1_16_R1();
 			break;
 		default:
