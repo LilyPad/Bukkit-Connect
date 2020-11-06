@@ -104,7 +104,8 @@ public class ConnectThread implements Runnable {
 				// announce
 				AsServerResult asServerResult;
 				try {
-					asServerResult = connect.request(new AsServerRequest(this.connectPlugin.getInboundAddress().getPort())).await(2500L);
+					AsServerRequest asServerRequest = new AsServerRequest(this.connectPlugin.getInboundAddress().getAddress().getHostAddress(), this.connectPlugin.getInboundAddress().getPort());
+					asServerResult = connect.request(asServerRequest).await(2500L);
 				} catch(RequestException exception) {
 					connect.disconnect();
 					System.out.println("[Connect] Request exception while acquiring role, retrying: " + exception.getMessage());
