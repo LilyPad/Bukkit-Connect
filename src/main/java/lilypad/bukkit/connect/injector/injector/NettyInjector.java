@@ -1,4 +1,4 @@
-package lilypad.bukkit.connect.injector;
+package lilypad.bukkit.connect.injector.injector;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
@@ -11,14 +11,16 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import lilypad.bukkit.connect.ConnectPlugin;
+import lilypad.bukkit.connect.injector.initializer.NettyChannelInitializer;
+import lilypad.bukkit.connect.injector.handler.NettyInjectHandler;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 
 import org.bukkit.Server;
 
-public class NettyInjector {
+public class NettyInjector implements INettyInjector {
 
 	@SuppressWarnings("unchecked")
-	public static int injectAndFindPort(Server server, NettyInjectHandler handler) throws Exception {
+	public int injectAndFindPort(Server server, Object handler) throws Exception {
 		Method serverGetHandle = server.getClass().getDeclaredMethod("getServer");
 		Object minecraftServer = serverGetHandle.invoke(server);
 		// Get Server Connection
@@ -43,7 +45,7 @@ public class NettyInjector {
 			// Get Old ChildHandler
 			ChannelInitializer<SocketChannel> oldChildHandler = ReflectionUtils.getPrivateField(serverBootstrapAcceptor.getClass(), serverBootstrapAcceptor, ChannelInitializer.class, "childHandler");
 			// Set New ChildHandler
-			ReflectionUtils.setFinalField(serverBootstrapAcceptor.getClass(), serverBootstrapAcceptor, "childHandler", new NettyChannelInitializer(handler, oldChildHandler));
+			ReflectionUtils.setFinalField(serverBootstrapAcceptor.getClass(), serverBootstrapAcceptor, "childHandler", new NettyChannelInitializer((NettyInjectHandler) handler, oldChildHandler));
 			// Update Common Port
 			commonPort = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort();
 		}

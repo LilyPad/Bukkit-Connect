@@ -1,21 +1,21 @@
-package lilypad.bukkit.connect.injector;
+package lilypad.bukkit.connect.injector.initializer;
 
+import lilypad.bukkit.connect.injector.decoder.NettyDecoderHandlerLegacy;
+import lilypad.bukkit.connect.injector.handler.NettyInjectHandlerLegacy;
+import net.minecraft.util.io.netty.channel.Channel;
+import net.minecraft.util.io.netty.channel.ChannelInitializer;
+import net.minecraft.util.io.netty.channel.socket.SocketChannel;
 import org.bukkit.Bukkit;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.lang.reflect.Method;
 
-public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class NettyChannelInitializerLegacy extends ChannelInitializer<SocketChannel> {
 
-	private NettyInjectHandler handler;
+	private NettyInjectHandlerLegacy handler;
 	private ChannelInitializer<SocketChannel> oldChildHandler;
 	private Method oldChildHandlerMethod;
-	
-	public NettyChannelInitializer(NettyInjectHandler handler, ChannelInitializer<SocketChannel> oldChildHandler) throws Exception {
+
+	public NettyChannelInitializerLegacy(NettyInjectHandlerLegacy handler, ChannelInitializer<SocketChannel> oldChildHandler) throws Exception {
 		this.handler = handler;
 		this.oldChildHandler = oldChildHandler;
 		this.oldChildHandlerMethod = this.oldChildHandler.getClass().getDeclaredMethod("initChannel", Channel.class);
@@ -31,7 +31,7 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 			if (channel.pipeline().names().contains("legacy_query") && Bukkit.getServer().getPluginManager().getPlugin("ProtocolSupport") == null) {
 				channel.pipeline().remove("legacy_query");
 			}
-			channel.pipeline().addAfter("decoder", "lilypad_decoder", new NettyDecoderHandler(this.handler));
+			channel.pipeline().addAfter("decoder", "lilypad_decoder", new NettyDecoderHandlerLegacy(this.handler));
 		}
 	}
 

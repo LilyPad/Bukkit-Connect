@@ -1,19 +1,21 @@
-package lilypad.bukkit.connect.login;
+package lilypad.bukkit.connect.login.inject;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.netty.channel.AbstractChannel;
 import io.netty.channel.ChannelHandlerContext;
 import lilypad.bukkit.connect.ConnectPlugin;
-import lilypad.bukkit.connect.injector.NettyDecoderHandler;
-import lilypad.bukkit.connect.injector.NettyInjectHandler;
+import lilypad.bukkit.connect.injector.decoder.NettyDecoderHandler;
+import lilypad.bukkit.connect.injector.handler.NettyInjectHandler;
 import lilypad.bukkit.connect.injector.OfflineInjector;
+import lilypad.bukkit.connect.login.proxy.LoginListenerProxy;
+import lilypad.bukkit.connect.login.LoginPayload;
+import lilypad.bukkit.connect.login.LoginPayloadCache;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
-import java.util.UUID;
 
 public class LoginNettyInjectHandler implements NettyInjectHandler {
 
@@ -203,6 +205,8 @@ public class LoginNettyInjectHandler implements NettyInjectHandler {
 			context.close();
 		}
 	}
+
+
 
 	public boolean isEnabled() {
 		return this.connectPlugin.isEnabled();
