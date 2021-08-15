@@ -1,6 +1,5 @@
 package lilypad.bukkit.connect;
 
-import lilypad.bukkit.connect.hooks.SpigotHook;
 import lilypad.bukkit.connect.injector.HandlerListInjector;
 import lilypad.bukkit.connect.injector.NettyInjector;
 import lilypad.bukkit.connect.injector.OfflineInjector;
@@ -22,7 +21,6 @@ import java.net.InetSocketAddress;
 public class ConnectPlugin extends JavaPlugin {
 
 	private LoginPayloadCache payloadCache = new LoginPayloadCache();
-	private SpigotHook spigotHook = new SpigotHook();
 	private Connect connect;
 	private ConnectThread connectThread;
 	private String securityKey;
@@ -164,10 +162,6 @@ public class ConnectPlugin extends JavaPlugin {
 
 	public void setSecurityKey(String securityKey) {
 		this.securityKey = securityKey;
-	}
-
-	public SpigotHook getSpigotHook() {
-		return this.spigotHook;
 	}
 
 	public static IProtocol getProtocol() {
