@@ -102,7 +102,7 @@ public class ConnectPlugin extends JavaPlugin {
 		this.connectThread = new ConnectThread(this);
 		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
 
-		super.getServer().getPluginManager().registerEvents(new LoginListener(this, payloadCache), this);
+		super.getServer().getPluginManager().registerEvents(new LoginListener(payloadCache), this);
 		super.getServer().getScheduler().runTask(this, new Runnable() {
 			public void run() {
 				try {
