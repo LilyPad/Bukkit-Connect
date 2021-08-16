@@ -1,7 +1,8 @@
 # Bukkit-Connect [![Jenkins](https://img.shields.io/jenkins/s/http/ci.lilypadmc.org/Bukkit-Connect.svg?maxAge=2592000?style=flat-square)](http://ci.lilypadmc.org/job/Bukkit-Connect)
 
 Paper plugin permitting a Minecraft server to connect to a LilyPad proxy network. 
-This plugin supports Paper 1.12+.
+This plugin supports Paper 1.12+. If you seek support for 1.11 or below, please use 
+[build 132](http://ci.lilypadmc.org/job/Bukkit-Connect/132/).
 
 ## Installation
 
