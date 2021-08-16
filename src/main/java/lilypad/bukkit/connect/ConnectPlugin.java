@@ -152,7 +152,6 @@ public class ConnectPlugin extends JavaPlugin {
                             return Collections.emptyList();
                         }
                     })
-                    .peek(list -> log.info("found list: " + list))
                     .filter(list -> !list.isEmpty() && ChannelFuture.class.isAssignableFrom(list.get(0).getClass()))
                     .map(list -> (ChannelFuture) list.get(0))
                     .map(channelFuture -> ((InetSocketAddress) channelFuture.channel().localAddress()).getPort())
