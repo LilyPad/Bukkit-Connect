@@ -1,10 +1,7 @@
 name: LilyPad-Connect
 version: ${build.number}
 description: LilyPad
-
 author: LilyPad
 website: http://www.lilypadmc.org/
-
 load: STARTUP
-loadbefore: [ProtocolLib, ProtocolSupport]
 main: ${main.class}
