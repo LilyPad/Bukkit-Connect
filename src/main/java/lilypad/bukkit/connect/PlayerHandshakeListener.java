@@ -46,7 +46,8 @@ public class PlayerHandshakeListener implements Listener {
             final Property[] mojangProperties = new Property[payloadProperties.length];
             for (int i = 0; i < payloadProperties.length; i++) {
                 final LoginPayload.Property payloadProperty = payloadProperties[i];
-                mojangProperties[i] = new Property(payloadProperty.getName(), payloadProperty.getValue(), payloadProperty.getSignature());
+                mojangProperties[i] = new Property(payloadProperty.getName(), payloadProperty.getValue(),
+                        payloadProperty.getSignature());
             }
             event.setPropertiesJson(gson.toJson(mojangProperties));
         } catch (Throwable throwable) {

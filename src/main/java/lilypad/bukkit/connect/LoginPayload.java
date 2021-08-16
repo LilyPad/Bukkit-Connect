@@ -8,6 +8,13 @@ import java.util.UUID;
 public class LoginPayload {
 
     private static final Gson gson = new Gson();
+    private String s;
+    private String h;
+    private String rIp;
+    private int rP;
+    private String n;
+    private String u;
+    private Property[] p;
 
     public static LoginPayload decode(String string) throws JsonSyntaxException {
         final LoginPayload result = gson.fromJson(string, LoginPayload.class);
@@ -16,14 +23,6 @@ public class LoginPayload {
         }
         return result;
     }
-
-    private String s;
-    private String h;
-    private String rIp;
-    private int rP;
-    private String n;
-    private String u;
-    private Property[] p;
 
     public String getSecurityKey() {
         return s;

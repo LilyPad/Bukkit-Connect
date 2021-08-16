@@ -33,11 +33,11 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j(topic = "LilyPad-Connect")
 public class ConnectPlugin extends JavaPlugin {
 
+    private final AtomicReference<String> securityKey = new AtomicReference<>();
     private int commonPort;
     private ConnectSettings connectSettings;
     private Connect connect;
     private ScheduledExecutorService executorService;
-    private final AtomicReference<String> securityKey = new AtomicReference<>();
 
     @Override
     public void onLoad() {
@@ -100,7 +100,9 @@ public class ConnectPlugin extends JavaPlugin {
 
         try {
             final GetKeyResult keyResult = makeConnectRequest(new GetKeyRequest());
-            final AuthenticateResult authenticateResult = makeConnectRequest(new AuthenticateRequest(connectSettings.getUsername(), connectSettings.getPassword(), keyResult.getKey()));
+            final AuthenticateResult authenticateResult =
+                    makeConnectRequest(new AuthenticateRequest(connectSettings.getUsername(),
+                            connectSettings.getPassword(), keyResult.getKey()));
             final StatusCode authenticateStatusCode = authenticateResult.getStatusCode();
             switch (authenticateStatusCode) {
                 case SUCCESS:
@@ -108,10 +110,12 @@ public class ConnectPlugin extends JavaPlugin {
                 case INVALID_GENERIC:
                     throw new RequestFailureException("Invalid username or password");
                 default:
-                    throw new RequestFailureException("Unknown error " + authenticateStatusCode + " while authenticating");
+                    throw new RequestFailureException("Unknown error " + authenticateStatusCode + " while " +
+                            "authenticating");
             }
 
-            final AsServerResult asServerResult = makeConnectRequest(new AsServerRequest(getInboundAddress().getPort()));
+            final AsServerResult asServerResult =
+                    makeConnectRequest(new AsServerRequest(getInboundAddress().getPort()));
             final StatusCode asServerStatusCode = asServerResult.getStatusCode();
             switch (asServerStatusCode) {
                 case SUCCESS:
@@ -135,7 +139,8 @@ public class ConnectPlugin extends JavaPlugin {
         try {
             result = connect.request(request).await(2500L);
         } catch (InterruptedException | RequestException exception) {
-            throw new RequestFailureException("Exception occurred while fetching response for " + request.getClass(), exception);
+            throw new RequestFailureException("Exception occurred while fetching response for " + request.getClass(),
+                    exception);
         }
         if (result == null) {
             throw new RequestFailureException("Timed out fetching response for " + request.getClass());
@@ -145,8 +150,10 @@ public class ConnectPlugin extends JavaPlugin {
 
     private int getCommonPort() {
         try {
-            final Object minecraftServer = super.getServer().getClass().getMethod("getServer").invoke(super.getServer());
-            final Object serverConnection = minecraftServer.getClass().getMethod("getServerConnection").invoke(minecraftServer);
+            final Object minecraftServer =
+                    super.getServer().getClass().getMethod("getServer").invoke(super.getServer());
+            final Object serverConnection =
+                    minecraftServer.getClass().getMethod("getServerConnection").invoke(minecraftServer);
             return Arrays.stream(serverConnection.getClass().getDeclaredFields())
                     .filter(field -> field.getType().equals(List.class))
                     .peek(field -> field.setAccessible(true))
@@ -154,7 +161,8 @@ public class ConnectPlugin extends JavaPlugin {
                         try {
                             return (List) field.get(serverConnection);
                         } catch (IllegalAccessException exception) {
-                            log.warn("Failed to get list from ServerConnection field \"" + field.getName() + "\", defaulting to empty list", exception);
+                            log.warn("Failed to get list from ServerConnection field \"" + field.getName() + "\", " +
+                                    "defaulting to empty list", exception);
                             return Collections.emptyList();
                         }
                     })
