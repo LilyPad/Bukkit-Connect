@@ -1,177 +1,195 @@
 package lilypad.bukkit.connect;
 
-import lilypad.bukkit.connect.hooks.SpigotHook;
-import lilypad.bukkit.connect.injector.HandlerListInjector;
-import lilypad.bukkit.connect.injector.NettyInjector;
-import lilypad.bukkit.connect.injector.OfflineInjector;
-import lilypad.bukkit.connect.login.LoginListener;
-import lilypad.bukkit.connect.login.LoginNettyInjectHandler;
-import lilypad.bukkit.connect.login.LoginPayloadCache;
-import lilypad.bukkit.connect.protocol.*;
-import lilypad.bukkit.connect.util.ReflectionUtils;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.netty.channel.ChannelFuture;
 import lilypad.client.connect.api.Connect;
+import lilypad.client.connect.api.ConnectSettings;
+import lilypad.client.connect.api.request.Request;
+import lilypad.client.connect.api.request.RequestException;
+import lilypad.client.connect.api.request.impl.AsServerRequest;
+import lilypad.client.connect.api.request.impl.AuthenticateRequest;
+import lilypad.client.connect.api.request.impl.GetKeyRequest;
+import lilypad.client.connect.api.result.Result;
+import lilypad.client.connect.api.result.StatusCode;
+import lilypad.client.connect.api.result.impl.AsServerResult;
+import lilypad.client.connect.api.result.impl.AuthenticateResult;
+import lilypad.client.connect.api.result.impl.GetKeyResult;
 import lilypad.client.connect.lib.ConnectImpl;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j(topic = "LilyPad-Connect")
 public class ConnectPlugin extends JavaPlugin {
 
-	private LoginPayloadCache payloadCache = new LoginPayloadCache();
-	private SpigotHook spigotHook = new SpigotHook();
-	private Connect connect;
-	private ConnectThread connectThread;
-	private String securityKey;
-	private int commonPort;
-	private static IProtocol protocol;
+    private final AtomicReference<String> securityKey = new AtomicReference<>();
+    private int commonPort;
+    private ConnectSettings connectSettings;
+    private Connect connect;
+    private ScheduledExecutorService executorService;
 
-	@Override
-	public void onLoad() {
-		super.getConfig().options().copyDefaults(true);
-		super.saveConfig();
-		super.reloadConfig();
-	}
+    @Override
+    public void onLoad() {
+        super.getConfig().options().copyDefaults(true);
+        super.saveConfig();
+        super.reloadConfig();
+    }
 
-	@Override
-	public void onEnable() {
-		String version = super.getServer().getClass().getPackage().getName().replace(".",  ",").split(",")[3];
-		switch (version) {
-		case "v1_8_R1":
-			protocol = new Protocol1_8_R1();
-			break;
-		case "v1_8_R2":
-		case "v1_8_R3":
-			protocol = new Protocol1_8_R2();
-			break;
-		case "v1_9_R1":
-			protocol = new Protocol1_9_R1();
-			break;
-		case "v1_9_R2":
-			protocol = new Protocol1_9_R2();
-			break;
-		case "v1_10_R1":
-			protocol = new Protocol1_10_R1();
-			break;
-		case "v1_11_R1":
-			protocol = new Protocol1_11_R1();
-			break;
-		case "v1_12_R1":
-			protocol = new Protocol1_12_R1();
-			break;
-		case "v1_14_R1":
-			protocol = new Protocol1_14_R1();
-			break;
-		case "v1_15_R1":
-			protocol = new Protocol1_15_R1();
-			break;
-		case "v1_16_R1":
-		case "v1_16_R2":
-		case "v1_16_R3":
-			protocol = new Protocol1_16_R1();
-			break;
-		default:
-			System.out.println("[Connect] Unable to start plugin - unsupported version (" + version + "). Please retrieve the newest version at http://lilypadmc.org");
-			return;
-		}
+    @Override
+    public void onEnable() {
+        try {
+            if (super.getServer().getOnlineMode()) {
+                throw new IllegalStateException("LilyPad requires \"online-mode=false\" in server.properties");
+            }
+            if (super.getServer().spigot().getSpigotConfig().getBoolean("settings.bungeecord", false)) {
+                throw new IllegalStateException("LilyPad requires \"settings.bungeecord: false\" in spigot.yml");
+            }
 
-		try {
-			// Modify handshake packet max string size
-			// -- as of 1.8 I do not believe this is necessary anymore
-			/*if (!protocol.getGeneralVersion().equals("1.10")) {
-				PacketInjector.injectStringMaxSize(super.getServer(), "handshaking", 0x00, 65535);
-			}*/
-			// Handle LilyPad handshake packet
-			commonPort = NettyInjector.injectAndFindPort(super.getServer(), new LoginNettyInjectHandler(this, payloadCache));
-			// If we are in online-mode
-			if (super.getServer().getOnlineMode()) {
-				// Prioritize our events
-				HandlerListInjector.prioritize(this, AsyncPlayerPreLoginEvent.class);
-				HandlerListInjector.prioritize(this, PlayerLoginEvent.class);
-				// Pseudo offline mode
-				OfflineInjector.inject(super.getServer());
-			}
-		} catch(Exception exception) {
-			exception.printStackTrace();
-			System.out.println("[Connect] Unable to start plugin - unsupported version?");
-			return;
-		}
+            super.getServer().spigot().getBukkitConfig().set("settings.connection-throttle", -1);
 
-		this.connect = new ConnectImpl(new ConnectSettingsImpl(super.getConfig()), this.getInboundAddress().getAddress().getHostAddress());
-		this.connectThread = new ConnectThread(this);
-		super.getServer().getServicesManager().register(Connect.class, this.connect, this, ServicePriority.Normal);
+            commonPort = getCommonPort();
+            connectSettings = new ConnectSettingsImpl(super.getConfig());
+            connect = new ConnectImpl(connectSettings, getInboundAddress().getAddress().getHostAddress());
+            executorService = Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("LilyPad Connect Thread %d")
+                            .setDaemon(true)
+                            .build());
 
-		super.getServer().getPluginManager().registerEvents(new LoginListener(this, payloadCache), this);
-		super.getServer().getScheduler().runTask(this, new Runnable() {
-			public void run() {
-				try {
-					// Connection Throttle
-					Object craftServer = ConnectPlugin.super.getServer();
-					YamlConfiguration configuration = ReflectionUtils.getPrivateField(craftServer.getClass(), craftServer, YamlConfiguration.class, "configuration");
-					configuration.set("settings.connection-throttle", 0);
-					// Start
-					ConnectPlugin.this.connectThread.start();
-				} catch(Exception exception) {
-					exception.printStackTrace();
-					System.out.println("[Connect] Unable to start plugin - unsupported version?");
-				}
-			}
-		});
-	}
+            executorService.scheduleAtFixedRate(this::ensureConnected, 0L, 1L, TimeUnit.SECONDS);
 
-	@Override
-	public void onDisable() {
-		try {
-			if (this.connectThread != null) {
-				this.connectThread.stop();
-			}
-			if (!super.getConfig().getBoolean("shutdown-lazy", false)) {
-				if (this.connect != null) {
-					this.connect.close();
-				}
-			}
-		} catch(Exception exception) {
-			exception.printStackTrace();
-		} finally {
-			this.connect = null;
-			this.connectThread = null;
-			ConnectPlugin.protocol = null;
-		}
-	}
+            super.getServer().getPluginManager().registerEvents(new PlayerHandshakeListener(this), this);
+            super.getServer().getServicesManager().register(Connect.class, connect, this, ServicePriority.Normal);
+        } catch (Throwable throwable) {
+            log.error("Failed to initialize plugin. For your security, the server will now shut down.", throwable);
+            Bukkit.shutdown();
+        }
+    }
 
-	public InetSocketAddress getInboundAddress() {
-		String ip = super.getServer().getIp();
-		if (ip.isEmpty()) {
-			ip = "0.0.0.0";
-		}
-		int port = super.getServer().getPort();
-		if (port == 0) {
-			port = this.commonPort;
-		}
-		return new InetSocketAddress(ip, port);
-	}
+    @Override
+    public void onDisable() {
+        executorService.shutdownNow();
+        connect.close();
+    }
 
-	public Connect getConnect() {
-		return this.connect;
-	}
+    private void ensureConnected() {
+        if (connect.isClosed() || connect.isConnected()) {
+            return;
+        }
 
-	public String getSecurityKey() {
-		return this.securityKey;
-	}
+        securityKey.set(null);
+        log.info("Attempting cloud connection...");
 
-	public void setSecurityKey(String securityKey) {
-		this.securityKey = securityKey;
-	}
+        try {
+            connect.connect();
+        } catch (Throwable throwable) {
+            log.warn("Couldn't connect to remote host, retrying", throwable);
+            return;
+        }
 
-	public SpigotHook getSpigotHook() {
-		return this.spigotHook;
-	}
+        try {
+            final GetKeyResult keyResult = makeConnectRequest(new GetKeyRequest());
+            final AuthenticateResult authenticateResult =
+                    makeConnectRequest(new AuthenticateRequest(connectSettings.getUsername(),
+                            connectSettings.getPassword(), keyResult.getKey()));
+            final StatusCode authenticateStatusCode = authenticateResult.getStatusCode();
+            switch (authenticateStatusCode) {
+                case SUCCESS:
+                    break;
+                case INVALID_GENERIC:
+                    throw new RequestFailureException("Invalid username or password");
+                default:
+                    throw new RequestFailureException("Unknown error " + authenticateStatusCode + " while " +
+                            "authenticating");
+            }
 
-	public static IProtocol getProtocol() {
-		return protocol;
-	}
+            final AsServerResult asServerResult =
+                    makeConnectRequest(new AsServerRequest(getInboundAddress().getPort()));
+            final StatusCode asServerStatusCode = asServerResult.getStatusCode();
+            switch (asServerStatusCode) {
+                case SUCCESS:
+                    break;
+                case INVALID_GENERIC:
+                    throw new RequestFailureException("Username already in use");
+                default:
+                    throw new RequestFailureException("Unknown error " + asServerStatusCode + " while acquiring role");
+            }
+
+            securityKey.set(asServerResult.getSecurityKey());
+            log.info("Connected to the cloud!");
+        } catch (RequestFailureException exception) {
+            connect.disconnect();
+            log.warn("Failed to connect, retrying", exception);
+        }
+    }
+
+    private <T extends Result> T makeConnectRequest(Request<T> request) throws RequestFailureException {
+        final T result;
+        try {
+            result = connect.request(request).await(2500L);
+        } catch (InterruptedException | RequestException exception) {
+            throw new RequestFailureException("Exception occurred while fetching response for " + request.getClass(),
+                    exception);
+        }
+        if (result == null) {
+            throw new RequestFailureException("Timed out fetching response for " + request.getClass());
+        }
+        return result;
+    }
+
+    private int getCommonPort() {
+        try {
+            final Object minecraftServer =
+                    super.getServer().getClass().getMethod("getServer").invoke(super.getServer());
+            final Object serverConnection =
+                    minecraftServer.getClass().getMethod("getServerConnection").invoke(minecraftServer);
+            return Arrays.stream(serverConnection.getClass().getDeclaredFields())
+                    .filter(field -> field.getType().equals(List.class))
+                    .peek(field -> field.setAccessible(true))
+                    .map(field -> {
+                        try {
+                            return (List) field.get(serverConnection);
+                        } catch (IllegalAccessException exception) {
+                            log.warn("Failed to get list from ServerConnection field \"" + field.getName() + "\", " +
+                                    "defaulting to empty list", exception);
+                            return Collections.emptyList();
+                        }
+                    })
+                    .filter(list -> !list.isEmpty() && ChannelFuture.class.isAssignableFrom(list.get(0).getClass()))
+                    .map(list -> (ChannelFuture) list.get(0))
+                    .map(channelFuture -> ((InetSocketAddress) channelFuture.channel().localAddress()).getPort())
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Failed to find common port"));
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {
+            throw new IllegalStateException("Failed to resolve channelFuture list", exception);
+        }
+    }
+
+    private InetSocketAddress getInboundAddress() {
+        String ip = super.getServer().getIp();
+        if (ip.isEmpty()) {
+            ip = "0.0.0.0";
+        }
+        int port = super.getServer().getPort();
+        if (port == 0) {
+            port = this.commonPort;
+        }
+        return new InetSocketAddress(ip, port);
+    }
+
+    public String getSecurityKey() {
+        return securityKey.get();
+    }
 
 }

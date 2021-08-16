@@ -1,12 +1,18 @@
-Bukkit-Connect [![Jenkins](https://img.shields.io/jenkins/s/http/ci.lilypadmc.org/Bukkit-Connect.svg?maxAge=2592000?style=flat-square)](http://ci.lilypadmc.org/job/Bukkit-Connect)
-===========
+# Bukkit-Connect [![Jenkins](https://img.shields.io/jenkins/s/http/ci.lilypadmc.org/Bukkit-Connect.svg?maxAge=2592000?style=flat-square)](http://ci.lilypadmc.org/job/Bukkit-Connect)
 
-This version of Bukkit-Connect supports Spigot 1.8 through 1.12
+Paper plugin permitting a Minecraft server to connect to a LilyPad proxy network. 
+This plugin supports Paper 1.12+. If you seek support for 1.11 or below, please use 
+[build 132](http://ci.lilypadmc.org/job/Bukkit-Connect/132/).
 
-Compilation
------------
+## Installation
 
-We use maven to handle our dependencies.
+1. Download a built of the plugin [here](http://ci.lilypadmc.org/job/Bukkit-Connect/)
+2. Place the plugin in the `plugins` folder of your Paper server
+3. Ensure `online-mode=false` in `server.properties` and BungeeCord support is not enabled
+4. Start your server once, then shut it down
+5. Edit `plugins/LilyPad-Connect/config.yml` with your desired values
+6. Boot up your server and connect through LilyPad
 
-* Install [Maven 3](http://maven.apache.org/download.html)
-* Clone this repo and: `mvn clean install`
+## Compilation
+
+With [Maven 3](http://maven.apache.org/download.html) installed, run `mvn clean package` in the root project directory.
