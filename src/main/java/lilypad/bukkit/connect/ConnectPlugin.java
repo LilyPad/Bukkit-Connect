@@ -16,6 +16,7 @@ import lilypad.client.connect.api.result.impl.AuthenticateResult;
 import lilypad.client.connect.api.result.impl.GetKeyResult;
 import lilypad.client.connect.lib.ConnectImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -47,28 +48,33 @@ public class ConnectPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        if (super.getServer().getOnlineMode()) {
-            throw new IllegalStateException("LilyPad requires \"online-mode=false\" in server.properties");
+        try {
+            if (super.getServer().getOnlineMode()) {
+                throw new IllegalStateException("LilyPad requires \"online-mode=false\" in server.properties");
+            }
+            if (super.getServer().spigot().getSpigotConfig().getBoolean("settings.bungeecord", false)) {
+                throw new IllegalStateException("LilyPad requires \"settings.bungeecord: false\" in spigot.yml");
+            }
+
+            super.getServer().spigot().getBukkitConfig().set("settings.connection-throttle", -1);
+
+            commonPort = getCommonPort();
+            connectSettings = new ConnectSettingsImpl(super.getConfig());
+            connect = new ConnectImpl(connectSettings, getInboundAddress().getAddress().getHostAddress());
+            executorService = Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("LilyPad Connect Thread %d")
+                            .setDaemon(true)
+                            .build());
+
+            executorService.scheduleAtFixedRate(this::ensureConnected, 0L, 1L, TimeUnit.SECONDS);
+
+            super.getServer().getPluginManager().registerEvents(new PlayerHandshakeListener(this), this);
+            super.getServer().getServicesManager().register(Connect.class, connect, this, ServicePriority.Normal);
+        } catch (Throwable throwable) {
+            log.error("Failed to initialize plugin. For your security, the server will now shut down.", throwable);
+            Bukkit.shutdown();
         }
-        if (super.getServer().spigot().getSpigotConfig().getBoolean("settings.bungeecord", false)) {
-            throw new IllegalStateException("LilyPad requires \"settings.bungeecord: false\" in spigot.yml");
-        }
-
-        super.getServer().spigot().getBukkitConfig().set("settings.connection-throttle", -1);
-
-        commonPort = getCommonPort();
-        connectSettings = new ConnectSettingsImpl(super.getConfig());
-        connect = new ConnectImpl(connectSettings, getInboundAddress().getAddress().getHostAddress());
-        executorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setNameFormat("LilyPad Connect Thread %d")
-                        .setDaemon(true)
-                        .build());
-
-        executorService.scheduleAtFixedRate(this::ensureConnected, 0L, 1L, TimeUnit.SECONDS);
-
-        super.getServer().getPluginManager().registerEvents(new PlayerHandshakeListener(this), this);
-        super.getServer().getServicesManager().register(Connect.class, connect, this, ServicePriority.Normal);
     }
 
     @Override
