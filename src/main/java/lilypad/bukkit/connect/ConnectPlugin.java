@@ -29,7 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Slf4j
+@Slf4j(topic = "LilyPad-Connect")
 public class ConnectPlugin extends JavaPlugin {
 
     private int commonPort;

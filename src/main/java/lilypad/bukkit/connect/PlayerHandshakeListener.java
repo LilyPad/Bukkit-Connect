@@ -10,7 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-@Slf4j
+@Slf4j(topic = "LilyPad-Connect: PlayerHandshakeListener")
 @RequiredArgsConstructor
 public class PlayerHandshakeListener implements Listener {
 
@@ -30,18 +30,12 @@ public class PlayerHandshakeListener implements Listener {
             try {
                 payload = LoginPayload.decode(rawPayload);
             } catch (Throwable throwable) {
-                log.error("Failed to decode payload: " + rawPayload, throwable);
-                event.setFailMessage("Failed to decide proxy payload");
-                event.setFailed(true);
-                return;
+                throw new IllegalStateException("Failed to decode payload: " + rawPayload, throwable);
             }
 
             final String payloadSecurityKey = payload.getSecurityKey();
             if (payloadSecurityKey == null || !payloadSecurityKey.equalsIgnoreCase(plugin.getSecurityKey())) {
-                log.error("Payload security key did not match plugin, payload is: " + rawPayload);
-                event.setFailMessage("Failed to verify security key");
-                event.setFailed(true);
-                return;
+                throw new IllegalStateException("Payload security key did not match plugin, payload is: " + rawPayload);
             }
 
             event.setServerHostname(payload.getHost());
@@ -56,8 +50,7 @@ public class PlayerHandshakeListener implements Listener {
             }
             event.setPropertiesJson(gson.toJson(mojangProperties));
         } catch (Throwable throwable) {
-            // this is just for security. if theres some sort of error we don't know about,
-            // let's prevent the possibility of a bad connection from occurring.
+            // for security reasons, if any error occurs here, we need to prevent the connection from occurring
             log.error("Failed to rewrite handshake", throwable);
             event.setFailMessage("Internal LilyPad error");
             event.setFailed(true);
