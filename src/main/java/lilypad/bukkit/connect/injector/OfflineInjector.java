@@ -45,7 +45,7 @@ public class OfflineInjector {
 				if(Modifier.isFinal(method.getModifiers())) {
 					continue;
 				}
-				if(Modifier.isPrivate(method.getModifiers())) {
+				if(Modifier.isPrivate(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
 					continue;
 				}
 				try {
