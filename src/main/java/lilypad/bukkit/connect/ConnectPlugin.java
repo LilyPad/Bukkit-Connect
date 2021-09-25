@@ -11,6 +11,7 @@ import lilypad.bukkit.connect.protocol.*;
 import lilypad.bukkit.connect.util.ReflectionUtils;
 import lilypad.client.connect.api.Connect;
 import lilypad.client.connect.lib.ConnectImpl;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -77,7 +78,7 @@ public class ConnectPlugin extends JavaPlugin {
 			protocol = new Protocol1_17_R1();
 			break;
 		default:
-			System.out.println("[Connect] Unable to start plugin - unsupported version (" + version + "). Please retrieve the newest version at http://lilypadmc.org");
+			Bukkit.getLogger().info("[Connect] Unable to start plugin - unsupported version (" + version + "). Please retrieve the newest version at http://lilypadmc.org");
 			return;
 		}
 
@@ -99,7 +100,7 @@ public class ConnectPlugin extends JavaPlugin {
 			}
 		} catch(Exception exception) {
 			exception.printStackTrace();
-			System.out.println("[Connect] Unable to start plugin - unsupported version?");
+			Bukkit.getLogger().info("[Connect] Unable to start plugin - unsupported version?");
 			return;
 		}
 
@@ -119,7 +120,7 @@ public class ConnectPlugin extends JavaPlugin {
 					ConnectPlugin.this.connectThread.start();
 				} catch(Exception exception) {
 					exception.printStackTrace();
-					System.out.println("[Connect] Unable to start plugin - unsupported version?");
+					Bukkit.getLogger().info("[Connect] Unable to start plugin - unsupported version?");
 				}
 			}
 		});
