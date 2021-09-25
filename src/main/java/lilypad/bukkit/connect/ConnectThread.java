@@ -9,6 +9,7 @@ import lilypad.client.connect.api.request.impl.GetKeyRequest;
 import lilypad.client.connect.api.result.impl.AsServerResult;
 import lilypad.client.connect.api.result.impl.AuthenticateResult;
 import lilypad.client.connect.api.result.impl.GetKeyResult;
+import org.bukkit.Bukkit;
 
 public class ConnectThread implements Runnable {
 
@@ -48,7 +49,7 @@ public class ConnectThread implements Runnable {
 					throw interruptedException;
 				} catch(Throwable throwable) {
 					connect.disconnect();
-					System.out.println("[Connect] Couldn't connect to remote host: \"" + throwable.getMessage() + "\", retrying");
+					Bukkit.getLogger().info("[Connect] Couldn't connect to remote host: \"" + throwable.getMessage() + "\", retrying");
 					Thread.sleep(1000L);
 					continue;
 				}
@@ -59,13 +60,13 @@ public class ConnectThread implements Runnable {
 					getKeyResult = connect.request(new GetKeyRequest()).await(2500L);
 				} catch(RequestException exception) {
 					connect.disconnect();
-					System.out.println("[Connect] Request exception while keying, retrying: " + exception.getMessage());
+					Bukkit.getLogger().info("[Connect] Request exception while keying, retrying: " + exception.getMessage());
 					Thread.sleep(1000L);
 					continue;
 				}
 				if (getKeyResult == null) {
 					connect.disconnect();
-					System.out.println("[Connect] Connection timed out while keying, retrying");
+					Bukkit.getLogger().info("[Connect] Connection timed out while keying, retrying");
 					Thread.sleep(1000L);
 					continue;
 				}
@@ -76,13 +77,13 @@ public class ConnectThread implements Runnable {
 					authenticationResult = connect.request(new AuthenticateRequest(settings.getUsername(), settings.getPassword(), getKeyResult.getKey())).await(2500L);
 				} catch(RequestException exception) {
 					connect.disconnect();
-					System.out.println("[Connect] Request exception while authenticating, retrying: " + exception.getMessage());
+					Bukkit.getLogger().info("[Connect] Request exception while authenticating, retrying: " + exception.getMessage());
 					Thread.sleep(1000L);
 					continue;
 				}
 				if (authenticationResult == null) {
 					connect.disconnect();
-					System.out.println("[Connect] Connection timed out while authenticating, retrying");
+					Bukkit.getLogger().info("[Connect] Connection timed out while authenticating, retrying");
 					Thread.sleep(1000L);
 					continue;
 				}
@@ -91,12 +92,12 @@ public class ConnectThread implements Runnable {
 					break;
 				case INVALID_GENERIC:
 					connect.disconnect();
-					System.out.println("[Connect] Invalid username or password, retrying");
+					Bukkit.getLogger().info("[Connect] Invalid username or password, retrying");
 					Thread.sleep(1000L);
 					continue;
 				default:
 					connect.disconnect();
-					System.out.println("[Connect] Unknown error while authenticating: \"" + authenticationResult.getStatusCode() + "\", retrying");
+					Bukkit.getLogger().info("[Connect] Unknown error while authenticating: \"" + authenticationResult.getStatusCode() + "\", retrying");
 					Thread.sleep(1000L);
 					continue;
 				}
@@ -107,13 +108,13 @@ public class ConnectThread implements Runnable {
 					asServerResult = connect.request(new AsServerRequest(this.connectPlugin.getInboundAddress().getPort())).await(2500L);
 				} catch(RequestException exception) {
 					connect.disconnect();
-					System.out.println("[Connect] Request exception while acquiring role, retrying: " + exception.getMessage());
+					Bukkit.getLogger().info("[Connect] Request exception while acquiring role, retrying: " + exception.getMessage());
 					Thread.sleep(1000L);
 					continue;
 				}
 				if (asServerResult == null) {
 					connect.disconnect();
-					System.out.println("[Connect] Connection timed out while acquiring role, retrying");
+					Bukkit.getLogger().info("[Connect] Connection timed out while acquiring role, retrying");
 					Thread.sleep(1000L);
 					continue;
 				}
@@ -122,24 +123,24 @@ public class ConnectThread implements Runnable {
 					break;
 				case INVALID_GENERIC:
 					connect.disconnect();
-					System.out.println("[Connect] Invalid username, already in use");
+					Bukkit.getLogger().info("[Connect] Invalid username, already in use");
 					Thread.sleep(1000L);
 					break;
 				default:
 					connect.disconnect();
-					System.out.println("[Connect] Unknown error while acquiring role: \"" + asServerResult.getStatusCode() + "\", retrying");
+					Bukkit.getLogger().info("[Connect] Unknown error while acquiring role: \"" + asServerResult.getStatusCode() + "\", retrying");
 					Thread.sleep(1000L);
 					continue;
 				}
 
 				// pause
-				System.out.println("[Connect] Connected to the cloud");
+				Bukkit.getLogger().info("[Connect] Connected to the cloud");
 				this.connectPlugin.setSecurityKey(asServerResult.getSecurityKey());
 				while(connect.isConnected()) {
 					Thread.sleep(1000L);
 				}
 				this.connectPlugin.setSecurityKey(null);
-				System.out.println("[Connect] Lost connection to the cloud, reconnecting");
+				Bukkit.getLogger().info("[Connect] Lost connection to the cloud, reconnecting");
 			}
 		} catch(InterruptedException exception) {
 			// ignore
